@@ -1,19 +1,15 @@
 -- Tilemaker Lua config for Hungarian hiking maps
+-- Modern API (for Tilemaker 3.0+)
 
--- Define layers
+-- Define which keys we're interested in
 node_keys = { "amenity", "shop", "tourism", "natural", "place", "man_made" }
-way_keys = { "highway", "waterway", "natural", "landuse", "leisure", "boundary", "building" }
-
--- Initialize
-function init_function()
-end
 
 -- Process nodes (points of interest)
-function node_function(node)
-    local amenity = node:Find("amenity")
-    local tourism = node:Find("tourism")
-    local natural = node:Find("natural")
-    local place = node:Find("place")
+function node_function()
+    local amenity = Find("amenity")
+    local tourism = Find("tourism")
+    local natural = Find("natural")
+    local place = Find("place")
 
     -- Hiking-relevant POIs
     if tourism == "alpine_hut" or tourism == "wilderness_hut" or
@@ -21,157 +17,197 @@ function node_function(node)
        amenity == "drinking_water" or natural == "spring" or
        natural == "peak" or natural == "saddle" or natural == "cave_entrance" then
 
-        local layer = LayerAsCentroid("pois")
-        layer:Attribute("type", tourism or amenity or natural)
+        Layer("pois", false)
+        Attribute("type", tourism or amenity or natural)
 
-        local name = node:Find("name")
+        local name = Find("name")
         if name ~= "" then
-            layer:Attribute("name", name)
+            Attribute("name", name)
         end
 
-        local ele = node:Find("ele")
+        local ele = Find("ele")
         if ele ~= "" then
-            layer:AttributeNumeric("elevation", tonumber(ele))
+            AttributeNumeric("elevation", tonumber(ele))
         end
+
+        MinZoom(12)
     end
 
     -- Place labels
     if place ~= "" then
-        local layer = LayerAsCentroid("place_labels")
-        layer:Attribute("type", place)
-        layer:Attribute("name", node:Find("name"))
+        Layer("place_labels", false)
+        Attribute("type", place)
 
-        local population = node:Find("population")
-        if population ~= "" then
-            layer:AttributeNumeric("population", tonumber(population))
+        local name = Find("name")
+        if name ~= "" then
+            Attribute("name", name)
         end
-        layer:MinZoom(place == "city" and 6 or place == "town" and 8 or 10)
+
+        local population = Find("population")
+        if population ~= "" then
+            AttributeNumeric("population", tonumber(population))
+        end
+
+        if place == "city" then
+            MinZoom(6)
+        elseif place == "town" then
+            MinZoom(8)
+        else
+            MinZoom(10)
+        end
     end
 end
 
 -- Process ways (trails, roads, areas)
-function way_function(way)
-    local highway = way:Find("highway")
-    local waterway = way:Find("waterway")
-    local natural = way:Find("natural")
-    local landuse = way:Find("landuse")
-    local leisure = way:Find("leisure")
-    local boundary = way:Find("boundary")
-    local building = way:Find("building")
+function way_function()
+    local highway = Find("highway")
+    local waterway = Find("waterway")
+    local natural = Find("natural")
+    local landuse = Find("landuse")
+    local leisure = Find("leisure")
+    local boundary = Find("boundary")
+    local building = Find("building")
 
     -- Trails (most important for hiking maps)
     if highway == "path" or highway == "footway" or highway == "cycleway" or
        highway == "bridleway" or highway == "track" or highway == "steps" then
 
-        local layer = Layer("trails", false)
-        layer:Attribute("type", highway)
+        Layer("trails", false)
+        Attribute("type", highway)
 
-        local name = way:Find("name")
+        local name = Find("name")
         if name ~= "" then
-            layer:Attribute("name", name)
+            Attribute("name", name)
         end
 
         -- Trail markings and difficulty
-        local sac_scale = way:Find("sac_scale")
+        local sac_scale = Find("sac_scale")
         if sac_scale ~= "" then
-            layer:Attribute("difficulty", sac_scale)
+            Attribute("difficulty", sac_scale)
         end
 
-        local trail_visibility = way:Find("trail_visibility")
+        local trail_visibility = Find("trail_visibility")
         if trail_visibility ~= "" then
-            layer:Attribute("visibility", trail_visibility)
+            Attribute("visibility", trail_visibility)
         end
 
-        -- Hungarian hiking trail colors (osmc:symbol, ref, color)
-        local osmc = way:Find("osmc:symbol")
+        -- Hungarian hiking trail colors
+        local osmc = Find("osmc:symbol")
         if osmc ~= "" then
-            layer:Attribute("osmc_symbol", osmc)
+            Attribute("osmc_symbol", osmc)
         end
 
-        local ref = way:Find("ref")
+        local ref = Find("ref")
         if ref ~= "" then
-            layer:Attribute("ref", ref)
+            Attribute("ref", ref)
         end
 
-        local color = way:Find("color")
+        local color = Find("color")
         if color ~= "" then
-            layer:Attribute("color", color)
+            Attribute("color", color)
         end
 
         -- Surface type
-        local surface = way:Find("surface")
+        local surface = Find("surface")
         if surface ~= "" then
-            layer:Attribute("surface", surface)
+            Attribute("surface", surface)
         end
 
-        layer:MinZoom(10)
+        MinZoom(10)
 
     -- Roads (for context)
     elseif highway == "motorway" or highway == "trunk" or highway == "primary" or
            highway == "secondary" or highway == "tertiary" or highway == "unclassified" or
            highway == "residential" or highway == "service" then
 
-        local layer = Layer("roads", false)
-        layer:Attribute("type", highway)
-        layer:Attribute("name", way:Find("name"))
+        Layer("roads", false)
+        Attribute("type", highway)
 
-        local surface = way:Find("surface")
-        if surface ~= "" then
-            layer:Attribute("surface", surface)
+        local name = Find("name")
+        if name ~= "" then
+            Attribute("name", name)
         end
 
-        layer:MinZoom(highway == "motorway" and 8 or highway == "primary" and 9 or 10)
+        local surface = Find("surface")
+        if surface ~= "" then
+            Attribute("surface", surface)
+        end
+
+        if highway == "motorway" then
+            MinZoom(8)
+        elseif highway == "primary" then
+            MinZoom(9)
+        else
+            MinZoom(10)
+        end
     end
 
     -- Waterways
     if waterway ~= "" then
-        local layer = Layer("waterway", false)
-        layer:Attribute("type", waterway)
-        layer:Attribute("name", way:Find("name"))
-        layer:MinZoom(waterway == "river" and 8 or 10)
+        Layer("waterway", false)
+        Attribute("type", waterway)
+
+        local name = Find("name")
+        if name ~= "" then
+            Attribute("name", name)
+        end
+
+        if waterway == "river" then
+            MinZoom(8)
+        else
+            MinZoom(10)
+        end
     end
 
-    -- Water bodies, forests, etc. (filled areas)
+    -- Water bodies (polygons)
     if natural == "water" or landuse == "reservoir" then
-        local layer = Layer("water", true)
-        layer:Attribute("type", natural or landuse)
-        layer:MinZoom(9)
-
-    elseif natural == "wood" or landuse == "forest" then
-        local layer = Layer("landuse", true)
-        layer:Attribute("type", "forest")
-        layer:MinZoom(10)
-
-    elseif landuse == "grass" or landuse == "meadow" or
-           natural == "grassland" or leisure == "park" then
-        local layer = Layer("landuse", true)
-        layer:Attribute("type", landuse or natural or leisure)
-        layer:MinZoom(11)
-
-    elseif landuse == "farmland" or landuse == "orchard" or landuse == "vineyard" then
-        local layer = Layer("landuse", true)
-        layer:Attribute("type", landuse)
-        layer:MinZoom(11)
+        Layer("water", true)
+        Attribute("type", natural or landuse)
+        MinZoom(9)
     end
 
-    -- Buildings
+    -- Forests (polygons)
+    if natural == "wood" or landuse == "forest" then
+        Layer("landuse", true)
+        Attribute("type", "forest")
+        MinZoom(10)
+    end
+
+    -- Grass/meadow (polygons)
+    if landuse == "grass" or landuse == "meadow" or
+       natural == "grassland" or leisure == "park" then
+        Layer("landuse", true)
+        Attribute("type", landuse or natural or leisure)
+        MinZoom(11)
+    end
+
+    -- Farmland (polygons)
+    if landuse == "farmland" or landuse == "orchard" or landuse == "vineyard" then
+        Layer("landuse", true)
+        Attribute("type", landuse)
+        MinZoom(11)
+    end
+
+    -- Buildings (polygons)
     if building ~= "" then
-        local layer = Layer("buildings", true)
-        layer:MinZoom(13)
+        Layer("buildings", true)
+        MinZoom(13)
     end
 
     -- Boundaries (administrative)
     if boundary == "administrative" then
-        local admin_level = tonumber(way:Find("admin_level"))
+        local admin_level = tonumber(Find("admin_level"))
         if admin_level and admin_level <= 8 then
-            local layer = Layer("boundaries", false)
-            layer:AttributeNumeric("admin_level", admin_level)
-            layer:MinZoom(admin_level <= 4 and 3 or admin_level <= 6 and 6 or 8)
+            Layer("boundaries", false)
+            AttributeNumeric("admin_level", admin_level)
+
+            if admin_level <= 4 then
+                MinZoom(3)
+            elseif admin_level <= 6 then
+                MinZoom(6)
+            else
+                MinZoom(8)
+            end
         end
     end
-end
-
--- Not processing multipolygon relations for simplicity
--- Add if needed for complex areas
-function exit_function()
 end
