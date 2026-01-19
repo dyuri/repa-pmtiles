@@ -38,9 +38,9 @@ echo "Step 2: Generating new tiles..."
 echo ""
 
 # Restart nginx if it's running
-if docker-compose -f "$PROJECT_DIR/docker-compose.yml" ps | grep -q "pmtiles-nginx"; then
+if podman compose -f "$PROJECT_DIR/docker-compose.yml" ps | grep -q "pmtiles-nginx"; then
     echo "Step 3: Restarting nginx server..."
-    docker-compose -f "$PROJECT_DIR/docker-compose.yml" restart
+    podman compose -f "$PROJECT_DIR/docker-compose.yml" restart
     echo ""
 fi
 

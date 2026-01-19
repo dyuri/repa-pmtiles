@@ -14,7 +14,7 @@ A complete Docker-based solution for generating and serving Hungarian hiking tra
 
 ### Prerequisites
 
-- Docker installed (with Docker Compose)
+- Docker or Podman installed (with compose support)
 - At least 4GB RAM (8GB recommended)
 - 20GB free disk space
 - Internet connection for downloading OSM data
@@ -44,7 +44,7 @@ The final `hungary-hiking.pmtiles` file will be 2-6GB depending on detail level.
 ### Step 3: Start the Server
 
 ```bash
-docker-compose up -d
+podman compose up -d
 ```
 
 This starts an nginx server on port 8080.
@@ -128,10 +128,12 @@ To regenerate tiles with the latest OSM data:
 ./scripts/generate-tiles.sh
 
 # Restart nginx to ensure fresh tiles are served
-docker-compose restart
+podman compose restart
 ```
 
-## Docker Images Used
+## Container Images Used
+
+Works with both Docker and Podman:
 
 - **Tilemaker**: `ghcr.io/systemed/tilemaker:master`
 - **PMTiles**: `ghcr.io/protomaps/go-pmtiles:latest`
@@ -141,17 +143,23 @@ docker-compose restart
 
 ```bash
 # Start the server
-docker-compose up -d
+podman compose up -d
+# or: make up
 
 # Stop the server
-docker-compose down
+podman compose down
+# or: make down
 
 # View logs
-docker-compose logs -f
+podman compose logs -f
+# or: make logs
 
 # Restart the server
-docker-compose restart
+podman compose restart
+# or: make restart
 ```
+
+Note: These commands work with both `podman compose` and `docker compose`.
 
 ## Performance Notes
 
@@ -195,7 +203,7 @@ tiles.yourdomain.com {
 
 Check the browser console for errors. Common issues:
 - Wrong URL in `www/index.html` (check the PMTiles URL)
-- CORS errors (check nginx logs: `docker-compose logs nginx`)
+- CORS errors (check nginx logs: `make logs` or `podman compose logs nginx`)
 - Range request issues (verify nginx config is loaded correctly)
 
 ### Out of memory during tile generation
@@ -214,8 +222,9 @@ Options to reduce size:
 - Remove some layers from `config-hiking.json`
 - Simplify features in `process-hiking.lua`
 
-### Docker permission errors
+### Container permission errors
 
+**For Docker users:**
 Make sure the Docker daemon is running:
 ```bash
 sudo systemctl status docker
@@ -226,6 +235,9 @@ If needed, add your user to the docker group:
 sudo usermod -aG docker $USER
 # Log out and back in
 ```
+
+**For Podman users:**
+Podman runs rootless by default, no additional setup needed.
 
 ## Map Features
 

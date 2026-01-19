@@ -36,8 +36,8 @@ echo "Step 1: Running Tilemaker to generate MBTiles..."
 echo "This may take 10-30 minutes depending on your system"
 echo ""
 
-# Run Tilemaker in Docker
-docker run --rm \
+# Run Tilemaker in Podman
+podman run --rm \
   -v "$DATA_DIR:/data" \
   -v "$CONFIG_DIR:/config" \
   -v "$TILES_DIR:/output" \
@@ -52,7 +52,7 @@ echo "Step 2: Converting MBTiles to PMTiles format..."
 echo ""
 
 # Run PMTiles conversion in Docker
-docker run --rm \
+podman run --rm \
   -v "$TILES_DIR:/tiles" \
   ghcr.io/protomaps/go-pmtiles:latest \
   convert /tiles/hungary-hiking.mbtiles /tiles/hungary-hiking.pmtiles
@@ -62,7 +62,7 @@ echo "Step 3: Verifying PMTiles..."
 echo ""
 
 # Verify the PMTiles file
-docker run --rm \
+podman run --rm \
   -v "$TILES_DIR:/tiles" \
   ghcr.io/protomaps/go-pmtiles:latest \
   verify /tiles/hungary-hiking.pmtiles

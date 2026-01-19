@@ -24,7 +24,7 @@ generate:
 
 up:
 	@echo "Starting nginx server..."
-	@docker-compose up -d
+	@podman compose up -d
 	@echo ""
 	@echo "Server started! View your map at:"
 	@echo "  http://localhost:8080"
@@ -32,14 +32,14 @@ up:
 
 down:
 	@echo "Stopping nginx server..."
-	@docker-compose down
+	@podman compose down
 
 restart:
 	@echo "Restarting nginx server..."
-	@docker-compose restart
+	@podman compose restart
 
 logs:
-	@docker-compose logs -f nginx
+	@podman compose logs -f nginx
 
 clean:
 	@echo "Cleaning up temporary files..."

@@ -59,6 +59,7 @@
             zoom: 8,
             style: {
                 version: 8,
+                glyphs: 'https://demotiles.maplibre.org/font/{fontstack}/{range}.pbf',
                 sources: {
                     'hungary-hiking': {
                         type: 'vector',
@@ -153,7 +154,7 @@
                             ]
                         }
                     },
-                    // Trails - base layer
+                    // Trails
                     {
                         id: 'trails',
                         type: 'line',
@@ -165,13 +166,6 @@
                                 'interpolate', ['linear'], ['zoom'],
                                 10, 1,
                                 14, 3
-                            ],
-                            'line-dasharray': [
-                                'match',
-                                ['get', 'type'],
-                                'path', [2, 2],
-                                'steps', [1, 1],
-                                [1, 0]
                             ]
                         }
                     },
@@ -185,7 +179,7 @@
                         minzoom: 13,
                         layout: {
                             'text-field': ['get', 'name'],
-                            'text-font': ['Open Sans Regular'],
+                            'text-font': ['Noto Sans Regular'],
                             'text-size': 11,
                             'symbol-placement': 'line',
                             'text-rotation-alignment': 'map'
@@ -249,7 +243,7 @@
                         minzoom: 13,
                         layout: {
                             'text-field': ['get', 'name'],
-                            'text-font': ['Open Sans Regular'],
+                            'text-font': ['Noto Sans Regular'],
                             'text-size': 10,
                             'text-anchor': 'top',
                             'text-offset': [0, 0.5]
@@ -268,7 +262,7 @@
                         'source-layer': 'place_labels',
                         layout: {
                             'text-field': ['get', 'name'],
-                            'text-font': ['Open Sans Bold'],
+                            'text-font': ['Noto Sans Bold'],
                             'text-size': [
                                 'match',
                                 ['get', 'type'],

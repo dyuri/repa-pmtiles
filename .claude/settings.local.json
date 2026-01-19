@@ -2,7 +2,9 @@
   "permissions": {
     "allow": [
       "Bash(chmod:*)",
-      "Bash(tree:*)"
+      "Bash(tree:*)",
+      "Bash(podman compose restart:*)",
+      "Bash(podman compose:*)"
     ]
   }
 }
