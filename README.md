@@ -110,11 +110,20 @@ url: 'pmtiles://http://localhost:YOUR_PORT/tiles/hungary-hiking.pmtiles'
 
 ### Customizing the Map Style
 
-Edit `www/index.html` to modify:
-- Colors and styling
-- Layer visibility
-- Font sizes
-- Popup content
+The map style is in `www/style.json` and can be edited:
+
+**Visual Editor (Recommended):**
+1. Open https://maputnik.github.io/editor/
+2. Load `http://localhost:8080/style.json`
+3. Edit visually (colors, widths, layers, etc.)
+4. Export and replace `www/style.json`
+
+**Manual Editing:**
+```bash
+nano www/style.json  # Edit the JSON directly
+```
+
+See `STYLE-EDITING.md` for a complete guide with examples and tips.
 
 ## Updating Your Tiles
 
