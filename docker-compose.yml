@@ -1,0 +1,23 @@
+version: '3.8'
+
+services:
+  # Nginx server for serving PMTiles
+  nginx:
+    image: nginx:alpine
+    container_name: pmtiles-nginx
+    ports:
+      - "8080:80"
+    volumes:
+      - ./tiles:/usr/share/nginx/html/tiles:ro
+      - ./www:/usr/share/nginx/html:ro
+      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    restart: unless-stopped
+    networks:
+      - pmtiles-network
+
+networks:
+  pmtiles-network:
+    driver: bridge
+
+# Note: tilemaker and pmtiles are run as one-off containers via scripts
+# They don't need to run continuously, so they're not defined here

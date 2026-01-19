@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Hungarian Hiking Map</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+    <link href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" rel="stylesheet">
+    <script src="https://unpkg.com/pmtiles@3.0.7/dist/pmtiles.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        }
+        #map {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 100%;
+        }
+        .info-box {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: white;
+            padding: 10px 15px;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            z-index: 1;
+            max-width: 300px;
+        }
+        .info-box h3 {
+            margin: 0 0 5px 0;
+            font-size: 16px;
+        }
+        .info-box p {
+            margin: 0;
+            font-size: 12px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="info-box">
+        <h3>Hungarian Hiking Map</h3>
+        <p>Vector tiles from OpenStreetMap</p>
+    </div>
+    <div id="map"></div>
+    <script>
+        // Register PMTiles protocol
+        let protocol = new pmtiles.Protocol();
+        maplibregl.addProtocol("pmtiles", protocol.tile);
+
+        // Initialize map
+        const map = new maplibregl.Map({
+            container: 'map',
+            center: [19.5, 47.2], // Budapest area
+            zoom: 8,
+            style: {
+                version: 8,
+                sources: {
+                    'hungary-hiking': {
+                        type: 'vector',
+                        url: 'pmtiles://http://localhost:8080/tiles/hungary-hiking.pmtiles',
+                        attribution: '© OpenStreetMap contributors'
+                    }
+                },
+                layers: [
+                    // Background
+                    {
+                        id: 'background',
+                        type: 'background',
+                        paint: {
+                            'background-color': '#f8f4f0'
+                        }
+                    },
+                    // Water
+                    {
+                        id: 'water',
+                        type: 'fill',
+                        source: 'hungary-hiking',
+                        'source-layer': 'water',
+                        paint: {
+                            'fill-color': '#a0c8f0'
+                        }
+                    },
+                    // Landuse - forests
+                    {
+                        id: 'forest',
+                        type: 'fill',
+                        source: 'hungary-hiking',
+                        'source-layer': 'landuse',
+                        filter: ['==', 'type', 'forest'],
+                        paint: {
+                            'fill-color': '#d0e6c8',
+                            'fill-opacity': 0.6
+                        }
+                    },
+                    // Landuse - grass/meadow
+                    {
+                        id: 'grass',
+                        type: 'fill',
+                        source: 'hungary-hiking',
+                        'source-layer': 'landuse',
+                        filter: ['in', 'type', 'grass', 'meadow', 'park'],
+                        paint: {
+                            'fill-color': '#e8f4e0',
+                            'fill-opacity': 0.4
+                        }
+                    },
+                    // Waterways
+                    {
+                        id: 'waterway',
+                        type: 'line',
+                        source: 'hungary-hiking',
+                        'source-layer': 'waterway',
+                        paint: {
+                            'line-color': '#a0c8f0',
+                            'line-width': [
+                                'interpolate', ['linear'], ['zoom'],
+                                8, 0.5,
+                                14, 2
+                            ]
+                        }
+                    },
+                    // Roads
+                    {
+                        id: 'roads',
+                        type: 'line',
+                        source: 'hungary-hiking',
+                        'source-layer': 'roads',
+                        paint: {
+                            'line-color': [
+                                'match',
+                                ['get', 'type'],
+                                'motorway', '#e892a2',
+                                'trunk', '#f9b29c',
+                                'primary', '#fcd6a4',
+                                'secondary', '#f7fabf',
+                                '#ffffff'
+                            ],
+                            'line-width': [
+                                'interpolate', ['linear'], ['zoom'],
+                                8, 0.5,
+                                14, ['match', ['get', 'type'],
+                                    'motorway', 4,
+                                    'trunk', 3.5,
+                                    'primary', 3,
+                                    'secondary', 2.5,
+                                    2
+                                ]
+                            ]
+                        }
+                    },
+                    // Trails - base layer
+                    {
+                        id: 'trails',
+                        type: 'line',
+                        source: 'hungary-hiking',
+                        'source-layer': 'trails',
+                        paint: {
+                            'line-color': '#d73f09',
+                            'line-width': [
+                                'interpolate', ['linear'], ['zoom'],
+                                10, 1,
+                                14, 3
+                            ],
+                            'line-dasharray': [
+                                'match',
+                                ['get', 'type'],
+                                'path', [2, 2],
+                                'steps', [1, 1],
+                                [1, 0]
+                            ]
+                        }
+                    },
+                    // Trail labels
+                    {
+                        id: 'trail-labels',
+                        type: 'symbol',
+                        source: 'hungary-hiking',
+                        'source-layer': 'trails',
+                        filter: ['has', 'name'],
+                        minzoom: 13,
+                        layout: {
+                            'text-field': ['get', 'name'],
+                            'text-font': ['Open Sans Regular'],
+                            'text-size': 11,
+                            'symbol-placement': 'line',
+                            'text-rotation-alignment': 'map'
+                        },
+                        paint: {
+                            'text-color': '#d73f09',
+                            'text-halo-color': '#fff',
+                            'text-halo-width': 2
+                        }
+                    },
+                    // Buildings
+                    {
+                        id: 'buildings',
+                        type: 'fill',
+                        source: 'hungary-hiking',
+                        'source-layer': 'buildings',
+                        minzoom: 13,
+                        paint: {
+                            'fill-color': '#d9d0c9',
+                            'fill-opacity': 0.7
+                        }
+                    },
+                    // POIs
+                    {
+                        id: 'pois',
+                        type: 'circle',
+                        source: 'hungary-hiking',
+                        'source-layer': 'pois',
+                        minzoom: 12,
+                        paint: {
+                            'circle-radius': [
+                                'match',
+                                ['get', 'type'],
+                                'peak', 6,
+                                'viewpoint', 5,
+                                'alpine_hut', 5,
+                                'shelter', 4,
+                                3
+                            ],
+                            'circle-color': [
+                                'match',
+                                ['get', 'type'],
+                                'peak', '#8b4513',
+                                'viewpoint', '#ff6b6b',
+                                'alpine_hut', '#4ecdc4',
+                                'shelter', '#45b7d1',
+                                'drinking_water', '#2e86de',
+                                '#999'
+                            ],
+                            'circle-stroke-width': 1,
+                            'circle-stroke-color': '#fff'
+                        }
+                    },
+                    // POI labels
+                    {
+                        id: 'poi-labels',
+                        type: 'symbol',
+                        source: 'hungary-hiking',
+                        'source-layer': 'pois',
+                        filter: ['has', 'name'],
+                        minzoom: 13,
+                        layout: {
+                            'text-field': ['get', 'name'],
+                            'text-font': ['Open Sans Regular'],
+                            'text-size': 10,
+                            'text-anchor': 'top',
+                            'text-offset': [0, 0.5]
+                        },
+                        paint: {
+                            'text-color': '#333',
+                            'text-halo-color': '#fff',
+                            'text-halo-width': 1.5
+                        }
+                    },
+                    // Place labels
+                    {
+                        id: 'place-labels',
+                        type: 'symbol',
+                        source: 'hungary-hiking',
+                        'source-layer': 'place_labels',
+                        layout: {
+                            'text-field': ['get', 'name'],
+                            'text-font': ['Open Sans Bold'],
+                            'text-size': [
+                                'match',
+                                ['get', 'type'],
+                                'city', 16,
+                                'town', 14,
+                                'village', 12,
+                                10
+                            ]
+                        },
+                        paint: {
+                            'text-color': '#333',
+                            'text-halo-color': '#fff',
+                            'text-halo-width': 2
+                        }
+                    }
+                ]
+            }
+        });
+
+        // Add navigation controls
+        map.addControl(new maplibregl.NavigationControl());
+
+        // Add scale
+        map.addControl(new maplibregl.ScaleControl());
+
+        // Click handler for trail info
+        map.on('click', 'trails', (e) => {
+            const features = map.queryRenderedFeatures(e.point, {
+                layers: ['trails']
+            });
+
+            if (!features.length) return;
+
+            const feature = features[0];
+            const props = feature.properties;
+
+            let html = `<strong>${props.name || 'Unnamed trail'}</strong><br>`;
+            html += `Type: ${props.type}<br>`;
+            if (props.difficulty) html += `Difficulty: ${props.difficulty}<br>`;
+            if (props.surface) html += `Surface: ${props.surface}<br>`;
+            if (props.ref) html += `Ref: ${props.ref}<br>`;
+
+            new maplibregl.Popup()
+                .setLngLat(e.lngLat)
+                .setHTML(html)
+                .addTo(map);
+        });
+
+        // Change cursor on hover
+        map.on('mouseenter', 'trails', () => {
+            map.getCanvas().style.cursor = 'pointer';
+        });
+
+        map.on('mouseleave', 'trails', () => {
+            map.getCanvas().style.cursor = '';
+        });
+
+        // Log when map loads successfully
+        map.on('load', () => {
+            console.log('Map loaded successfully!');
+        });
+
+        // Log any errors
+        map.on('error', (e) => {
+            console.error('Map error:', e);
+        });
+    </script>
+</body>
+</html>
