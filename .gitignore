@@ -6,6 +6,9 @@ data/*.osm
 tiles/*.mbtiles
 tiles/*.pmtiles
 
+# Downloaded fonts
+www/fonts/
+
 # Temporary files
 *.tmp
 *.log

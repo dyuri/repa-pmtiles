@@ -4,7 +4,8 @@
       "Bash(chmod:*)",
       "Bash(tree:*)",
       "Bash(podman compose restart:*)",
-      "Bash(podman compose:*)"
+      "Bash(podman compose:*)",
+      "Bash(./scripts/download-fonts.sh:*)"
     ]
   }
 }
