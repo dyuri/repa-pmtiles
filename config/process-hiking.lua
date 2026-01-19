@@ -118,7 +118,8 @@ function way_function()
     -- Roads (for context)
     elseif highway == "motorway" or highway == "trunk" or highway == "primary" or
            highway == "secondary" or highway == "tertiary" or highway == "unclassified" or
-           highway == "residential" or highway == "service" then
+           highway == "residential" or highway == "service" or highway == "living_street" or
+           highway == "road" or highway == "minor" then
 
         Layer("roads", false)
         Attribute("type", highway)
@@ -128,17 +129,25 @@ function way_function()
             Attribute("name", name)
         end
 
+        local ref = Find("ref")
+        if ref ~= "" then
+            Attribute("ref", ref)
+        end
+
         local surface = Find("surface")
         if surface ~= "" then
             Attribute("surface", surface)
         end
 
-        if highway == "motorway" then
+        if highway == "motorway" or highway == "trunk" then
             MinZoom(8)
         elseif highway == "primary" then
             MinZoom(9)
-        else
+        elseif highway == "secondary" or highway == "tertiary" then
             MinZoom(10)
+        else
+            -- Residential and smaller roads appear from zoom 11
+            MinZoom(11)
         end
     end
 
