@@ -7,8 +7,10 @@ A complete Docker-based solution for generating and serving Hungarian hiking tra
 - **Zero Installation**: Uses Docker containers for all tools (no manual compilation needed)
 - **Simple Scripts**: Download and generate tiles with a single command
 - **Production Ready**: nginx server with proper CORS and range request support
-- **MapLibre Integration**: Includes a working web viewer
+- **MapLibre Integration**: Includes a working web viewer with visual style editor support
 - **Lightweight**: Efficient PMTiles format reduces bandwidth and storage
+- **Self-hosted Fonts**: No external dependencies for map labels
+- **Topographic Maps**: Optional elevation contour lines (20m intervals)
 
 ## Quick Start
 
@@ -124,6 +126,25 @@ nano www/style.json  # Edit the JSON directly
 ```
 
 See `STYLE-EDITING.md` for a complete guide with examples and tips.
+
+## Adding Elevation Contours (Optional)
+
+Turn your hiking map into a full topographic map with elevation contour lines:
+
+```bash
+# Generate contour lines (20m intervals)
+make contours
+
+# Or do everything at once (OSM data + contours)
+make topo
+```
+
+This adds elevation lines showing terrain shape. See `CONTOURS.md` for:
+- Complete setup instructions
+- Style configuration examples
+- Customization options (intervals, colors, styling)
+
+**File sizes:** Contours add ~100-150MB to your tiles.
 
 ## Updating Your Tiles
 

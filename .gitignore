@@ -1,6 +1,10 @@
 # OSM data files
 data/*.osm.pbf
 data/*.osm
+data/*.geojson
+
+# DEM and elevation data
+data/dem/
 
 # Generated tiles
 tiles/*.mbtiles
