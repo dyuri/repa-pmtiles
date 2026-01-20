@@ -1,0 +1,19 @@
+{
+  "layers": {
+    "hiking_routes": {
+      "minzoom": 6,
+      "maxzoom": 14
+    }
+  },
+  "settings": {
+    "minzoom": 6,
+    "maxzoom": 14,
+    "basezoom": 14,
+    "include_ids": true,
+    "compress": "gzip",
+    "combine_below": 14,
+    "name": "Hiking Routes Only (Debug)",
+    "version": "1.0",
+    "description": "Debug version with only hiking route relations"
+  }
+}

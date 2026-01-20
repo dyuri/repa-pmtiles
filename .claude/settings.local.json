@@ -5,7 +5,13 @@
       "Bash(tree:*)",
       "Bash(podman compose restart:*)",
       "Bash(podman compose:*)",
-      "Bash(./scripts/download-fonts.sh:*)"
+      "Bash(./scripts/download-fonts.sh:*)",
+      "Bash(./scripts/generate-routes-debug.sh:*)",
+      "WebSearch",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "Bash(podman run:*)",
+      "Bash(sqlite3:*)"
     ]
   }
 }
