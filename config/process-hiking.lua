@@ -37,8 +37,10 @@ function relation_scan_function()
     end
 end
 
--- This is called in a second pass after way_function
-function relation_postscan_function()
+-- Process accepted relations and output their geometries
+-- FIX: Changed from relation_postscan_function to relation_function
+-- This allows Tilemaker to construct multilinestring geometries from relation member ways
+function relation_function()
     -- Get relation tags
     local osmc = Find("osmc:symbol")
     local color = Find("color")
@@ -46,29 +48,27 @@ function relation_postscan_function()
     local name = Find("name")
     local route = Find("route")
 
-    -- Check if it's a hiking route with color/symbol info
-    if osmc ~= "" or color ~= "" or name ~= "" then
-        Layer("trails", false)
-        
-        Attribute("class", "route") -- Distinguish routes from paths
-        Attribute("route", route)
+    -- Output the relation geometry as a multilinestring
+    Layer("trails", false)
 
-        if name ~= "" then Attribute("name", name) end
-        if ref ~= "" then Attribute("ref", ref) end
-        if osmc ~= "" then Attribute("osmc_symbol", osmc) end
+    Attribute("class", "route") -- Distinguish routes from paths
+    Attribute("route", route)
 
-        local t_color, t_symbol = parse_osmc(osmc)
-        
-        -- Fallback to color tag if OSMC didn't give a color
-        if not t_color and color ~= "" then
-            t_color = color
-        end
+    if name ~= "" then Attribute("name", name) end
+    if ref ~= "" then Attribute("ref", ref) end
+    if osmc ~= "" then Attribute("osmc_symbol", osmc) end
 
-        if t_color then Attribute("trail_color", t_color) end
-        if t_symbol then Attribute("trail_symbol", t_symbol) end
+    local t_color, t_symbol = parse_osmc(osmc)
 
-        MinZoom(10)
+    -- Fallback to color tag if OSMC didn't give a color
+    if not t_color and color ~= "" then
+        t_color = color
     end
+
+    if t_color then Attribute("trail_color", t_color) end
+    if t_symbol then Attribute("trail_symbol", t_symbol) end
+
+    MinZoom(10)
 end
 
 -- Process nodes (points of interest)
