@@ -451,19 +451,45 @@
       }
     },
     {
-      "id": "trails-outline",
+      "id": "physical-paths",
       "type": "line",
       "source": "hungary-hiking",
       "source-layer": "trails",
-      "minzoom": 10,
+      "minzoom": 11,
+      "filter": ["==", "class", "path"],
       "layout": {
         "line-cap": "round",
         "line-join": "round",
         "visibility": "visible"
       },
       "paint": {
-        "line-blur": 0.5,
-        "line-color": "hsla(120, 4%, 28%, 0.75)",
+        "line-color": "hsl(0, 0%, 40%)",
+        "line-width": [
+          "interpolate",
+          ["linear"],
+          ["zoom"],
+          12,
+          1,
+          16,
+          3
+        ],
+        "line-dasharray": [2, 1]
+      }
+    },
+    {
+      "id": "hiking-routes-casing",
+      "type": "line",
+      "source": "hungary-hiking",
+      "source-layer": "trails",
+      "minzoom": 10,
+      "filter": ["==", "class", "route"],
+      "layout": {
+        "line-cap": "round",
+        "line-join": "round",
+        "visibility": "visible"
+      },
+      "paint": {
+        "line-color": "hsla(0, 0%, 100%, 0.5)",
         "line-width": [
           "interpolate",
           ["linear"],
@@ -471,19 +497,38 @@
           10,
           3,
           14,
-          5,
-          16,
-          6
+          5
         ],
-        "line-opacity": 0.8
+        "line-offset": [
+          "interpolate",
+          ["linear"],
+          ["zoom"],
+          12,
+          0,
+          14,
+          [
+            "match",
+            ["get", "trail_color"],
+            "orange", 1,
+            "purple", 3,
+            "black", 5,
+            "brown", 7,
+            "blue", -1,
+            "green", -3,
+            "yellow", -5,
+            "red", -7,
+            0
+          ]
+        ]
       }
     },
     {
-      "id": "trails",
+      "id": "hiking-routes",
       "type": "line",
       "source": "hungary-hiking",
       "source-layer": "trails",
-      "minzoom": 10,
+      "minzoom": 6,
+      "filter": ["==", "class", "route"],
       "layout": {
         "line-cap": "round",
         "line-join": "round",
@@ -491,21 +536,47 @@
       },
       "paint": {
         "line-color": [
-          "case",
-          ["has", "color"],
-          ["get", "color"],
-          "hsl(15, 85%, 55%)"
+          "match",
+          ["get", "trail_color"],
+          "red", "hsl(0, 85%, 55%)",
+          "blue", "hsl(210, 85%, 55%)",
+          "green", "hsl(120, 65%, 45%)",
+          "yellow", "hsl(50, 95%, 45%)",
+          "orange", "hsl(35, 85%, 50%)",
+          "purple", "hsl(280, 75%, 50%)",
+          "black", "hsl(0, 0%, 20%)",
+          "brown", "hsl(30, 60%, 40%)",
+          "hsl(0, 0%, 50%)"
         ],
         "line-width": [
           "interpolate",
           ["linear"],
           ["zoom"],
           10,
-          1.5,
+          2,
           14,
-          3,
-          16,
-          4
+          3
+        ],
+        "line-offset": [
+          "interpolate",
+          ["linear"],
+          ["zoom"],
+          12,
+          0,
+          14,
+          [
+            "match",
+            ["get", "trail_color"],
+            "orange", 1,
+            "purple", 3,
+            "black", 5,
+            "brown", 7,
+            "blue", -1,
+            "green", -3,
+            "yellow", -5,
+            "red", -7,
+            0
+          ]
         ]
       }
     },
@@ -719,6 +790,82 @@
         "text-color": "hsl(0, 0%, 85%)",
         "text-halo-color": "hsl(0, 0%, 10%)",
         "text-halo-width": 1.5
+      }
+    },
+    {
+      "id": "trail-symbols",
+      "type": "symbol",
+      "source": "hungary-hiking",
+      "source-layer": "trails",
+      "filter": ["has", "trail_symbol"],
+      "minzoom": 12,
+      "layout": {
+        "text-field": [
+          "match",
+          ["get", "trail_symbol"],
+          "bar", "▬",
+          "stripe", "▬",
+          "cross", "+",
+          "x", "✕",
+          "circle", "●",
+          "dot", "●",
+          "rectangle", "▮",
+          "turned_T", "⊥",
+          "L", "⌐",
+          "corner", "⌐",
+          "backslash", "\\",
+          "slash", "/",
+          "triangle", "▲",
+          "pointer", "▶",
+          "diamond", "◆",
+          "●"
+        ],
+        "text-font": ["Noto Sans Bold"],
+        "text-size": [
+          "interpolate",
+          ["linear"],
+          ["zoom"],
+          12,
+          12,
+          16,
+          18
+        ],
+        "symbol-placement": "line",
+        "symbol-spacing": [
+          "interpolate",
+          ["linear"],
+          ["zoom"],
+          12,
+          150,
+          16,
+          250
+        ],
+        "text-keep-upright": true,
+        "text-allow-overlap": false,
+        "text-ignore-placement": false
+      },
+      "paint": {
+        "text-color": [
+          "case",
+          ["has", "trail_color"],
+          [
+            "match",
+            ["get", "trail_color"],
+            "red",
+            "hsl(0, 85%, 55%)",
+            "blue",
+            "hsl(210, 85%, 55%)",
+            "green",
+            "hsl(120, 65%, 45%)",
+            "yellow",
+            "hsl(50, 95%, 60%)",
+            "hsl(25, 35%, 35%)"
+          ],
+          "hsl(25, 35%, 35%)"
+        ],
+        "text-halo-color": "hsl(0, 0%, 100%)",
+        "text-halo-width": 2.5,
+        "text-opacity": 0.95
       }
     },
     {

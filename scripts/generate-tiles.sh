@@ -31,6 +31,10 @@ fi
 # Create tiles directory if it doesn't exist
 mkdir -p "$TILES_DIR"
 
+# Create temporary store directory for relation data
+STORE_DIR="$PROJECT_DIR/tmp/tilemaker_store"
+mkdir -p "$STORE_DIR"
+
 echo ""
 echo "Step 1: Running Tilemaker to generate MBTiles..."
 echo "This may take 10-30 minutes depending on your system"
@@ -41,11 +45,13 @@ podman run --rm \
   -v "$DATA_DIR:/data" \
   -v "$CONFIG_DIR:/config" \
   -v "$TILES_DIR:/output" \
+  -v "$STORE_DIR:/store" \
   ghcr.io/systemed/tilemaker:master \
   --input /data/hungary-latest.osm.pbf \
   --output /output/hungary-hiking.mbtiles \
   --config /config/config-hiking.json \
-  --process /config/process-hiking.lua
+  --process /config/process-hiking.lua \
+  --store /store
 
 echo ""
 echo "Step 2: Converting MBTiles to PMTiles format..."
@@ -68,11 +74,14 @@ podman run --rm \
   verify /tiles/hungary-hiking.pmtiles
 
 echo ""
-echo "Step 4: Cleaning up MBTiles file..."
+echo "Step 4: Cleaning up temporary files..."
 echo ""
 
-# Remove MBTiles to save space (optional)
+# Remove MBTiles to save space
 rm -f "$TILES_DIR/hungary-hiking.mbtiles"
+
+# Remove store directory (can be large)
+rm -rf "$STORE_DIR"
 
 echo ""
 echo "======================================"

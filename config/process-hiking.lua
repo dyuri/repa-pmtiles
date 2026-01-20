@@ -4,6 +4,73 @@
 -- Define which keys we're interested in
 node_keys = { "amenity", "shop", "tourism", "natural", "place", "man_made" }
 
+-- Helper to parse OSMC symbol
+function parse_osmc(osmc)
+    local trail_color = nil
+    local trail_symbol = nil
+    
+    local parts = {}
+    for part in (osmc .. ":"):gmatch("([^:]*):") do
+        table.insert(parts, part)
+    end
+
+    if #parts >= 1 and parts[1] ~= "" then
+        trail_color = parts[1]
+    end
+    if #parts >= 3 and parts[3] ~= "" then
+        local symbol_full = parts[3]
+        if trail_color and symbol_full:sub(1, #trail_color + 1) == trail_color .. "_" then
+            trail_symbol = symbol_full:sub(#trail_color + 2)
+        else
+            trail_symbol = symbol_full
+        end
+    end
+    return trail_color, trail_symbol
+end
+
+-- Process relations (to extract hiking route information)
+function relation_scan_function()
+    local type = Find("type")
+    local route = Find("route")
+    if type == "route" and (route == "hiking" or route == "foot") then
+        Accept()
+    end
+end
+
+-- This is called in a second pass after way_function
+function relation_postscan_function()
+    -- Get relation tags
+    local osmc = Find("osmc:symbol")
+    local color = Find("color")
+    local ref = Find("ref")
+    local name = Find("name")
+    local route = Find("route")
+
+    -- Check if it's a hiking route with color/symbol info
+    if osmc ~= "" or color ~= "" or name ~= "" then
+        Layer("trails", false)
+        
+        Attribute("class", "route") -- Distinguish routes from paths
+        Attribute("route", route)
+
+        if name ~= "" then Attribute("name", name) end
+        if ref ~= "" then Attribute("ref", ref) end
+        if osmc ~= "" then Attribute("osmc_symbol", osmc) end
+
+        local t_color, t_symbol = parse_osmc(osmc)
+        
+        -- Fallback to color tag if OSMC didn't give a color
+        if not t_color and color ~= "" then
+            t_color = color
+        end
+
+        if t_color then Attribute("trail_color", t_color) end
+        if t_symbol then Attribute("trail_symbol", t_symbol) end
+
+        MinZoom(10)
+    end
+end
+
 -- Process nodes (points of interest)
 function node_function()
     local amenity = Find("amenity")
@@ -73,6 +140,7 @@ function way_function()
        highway == "bridleway" or highway == "track" or highway == "steps" then
 
         Layer("trails", false)
+        Attribute("class", "path") -- Physical path
         Attribute("type", highway)
 
         local name = Find("name")
@@ -90,30 +158,14 @@ function way_function()
         if trail_visibility ~= "" then
             Attribute("visibility", trail_visibility)
         end
-
-        -- Hungarian hiking trail colors
-        local osmc = Find("osmc:symbol")
-        if osmc ~= "" then
-            Attribute("osmc_symbol", osmc)
-        end
-
-        local ref = Find("ref")
-        if ref ~= "" then
-            Attribute("ref", ref)
-        end
-
-        local color = Find("color")
-        if color ~= "" then
-            Attribute("color", color)
-        end
-
+        
         -- Surface type
         local surface = Find("surface")
         if surface ~= "" then
             Attribute("surface", surface)
         end
 
-        MinZoom(10)
+        MinZoom(11) -- Physical paths shown from zoom 11
 
     -- Roads (for context)
     elseif highway == "motorway" or highway == "trunk" or highway == "primary" or

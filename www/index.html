@@ -52,12 +52,38 @@
         let protocol = new pmtiles.Protocol();
         maplibregl.addProtocol("pmtiles", protocol.tile);
 
+        // Parse hash to get initial position (format: #zoom/lat/lng)
+        function parseHash() {
+            const hash = window.location.hash.slice(1);
+            if (!hash) return null;
+
+            const parts = hash.split('/');
+            if (parts.length === 3) {
+                const zoom = parseFloat(parts[0]);
+                const lat = parseFloat(parts[1]);
+                const lng = parseFloat(parts[2]);
+
+                if (!isNaN(zoom) && !isNaN(lat) && !isNaN(lng)) {
+                    return { zoom, center: [lng, lat] };
+                }
+            }
+            return null;
+        }
+
+        // Get initial position from hash or use default
+        const hashPosition = parseHash();
+        const initialPosition = hashPosition || {
+            center: [19.5, 47.2], // Budapest area
+            zoom: 8
+        };
+
         // Initialize map
         const map = new maplibregl.Map({
             container: 'map',
-            center: [19.5, 47.2], // Budapest area
-            zoom: 8,
-            style: 'http://localhost:8080/style.json'
+            center: initialPosition.center,
+            zoom: initialPosition.zoom,
+            style: 'http://localhost:8080/style.json',
+            hash: true  // Enable automatic hash updates
         });
 
         // Add navigation controls
