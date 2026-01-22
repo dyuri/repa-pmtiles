@@ -5,18 +5,25 @@
 node_keys = { "amenity", "shop", "tourism", "natural", "place", "man_made" }
 
 -- Helper to parse OSMC symbol
+-- Format: waycolor:background:foreground:text:textcolor
+-- Example: yellow:white::MZ:yellow or purple:white:::M:purple
 function parse_osmc(osmc)
     local trail_color = nil
     local trail_symbol = nil
-    
+    local trail_text = nil
+    local trail_text_color = nil
+
     local parts = {}
     for part in (osmc .. ":"):gmatch("([^:]*):") do
         table.insert(parts, part)
     end
 
+    -- Part 1: waycolor (main trail color)
     if #parts >= 1 and parts[1] ~= "" then
         trail_color = parts[1]
     end
+
+    -- Part 3: foreground symbol (geometric shape)
     if #parts >= 3 and parts[3] ~= "" then
         local symbol_full = parts[3]
         if trail_color and symbol_full:sub(1, #trail_color + 1) == trail_color .. "_" then
@@ -25,7 +32,23 @@ function parse_osmc(osmc)
             trail_symbol = symbol_full
         end
     end
-    return trail_color, trail_symbol
+
+    -- Part 4: text/letter symbol (standard position)
+    -- Part 5: text in non-standard position (fallback)
+    if #parts >= 4 and parts[4] ~= "" then
+        trail_text = parts[4]
+        if #parts >= 5 and parts[5] ~= "" then
+            trail_text_color = parts[5]
+        end
+    elseif #parts >= 5 and parts[5] ~= "" then
+        -- Non-standard: text in position 5
+        trail_text = parts[5]
+        if #parts >= 6 and parts[6] ~= "" then
+            trail_text_color = parts[6]
+        end
+    end
+
+    return trail_color, trail_symbol, trail_text, trail_text_color
 end
 
 -- Process relations (to extract hiking route information)
@@ -58,7 +81,7 @@ function relation_function()
     if ref ~= "" then Attribute("ref", ref) end
     if osmc ~= "" then Attribute("osmc_symbol", osmc) end
 
-    local t_color, t_symbol = parse_osmc(osmc)
+    local t_color, t_symbol, t_text, t_text_color = parse_osmc(osmc)
 
     -- Fallback to color tag if OSMC didn't give a color
     if not t_color and color ~= "" then
@@ -67,6 +90,8 @@ function relation_function()
 
     if t_color then Attribute("trail_color", t_color) end
     if t_symbol then Attribute("trail_symbol", t_symbol) end
+    if t_text then Attribute("trail_text", t_text) end
+    if t_text_color then Attribute("trail_text_color", t_text_color) end
 
     MinZoom(10)
 end

@@ -113,7 +113,8 @@
                 'orange': '#F77F00',
                 'purple': '#9D4EDD',
                 'black': '#2B2D42',
-                'brown': '#8B4513'
+                'brown': '#8B4513',
+                'white': '#F5F5F5'
             };
 
             // Symbol mapping for better display
@@ -133,10 +134,15 @@
             if (props.class === 'route') {
                 // Hiking route (relation)
                 const color = colorMap[props.trail_color] || '#888';
-                const symbol = symbolMap[props.trail_symbol] || props.trail_symbol || '●';
+
+                // Prefer text symbol (like "M", "MZ") over geometric symbol (like ▲, ●)
+                const symbol = props.trail_text || symbolMap[props.trail_symbol] || props.trail_symbol || '●';
+
+                // Use text color if available, otherwise use trail color
+                const textColor = props.trail_text_color ? (colorMap[props.trail_text_color] || props.trail_text_color) : 'white';
 
                 html += `<div style="display: flex; align-items: center; margin-bottom: 8px;">`;
-                html += `<div style="width: 20px; height: 20px; background: ${color}; border-radius: 3px; margin-right: 8px; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 14px;">${symbol}</div>`;
+                html += `<div style="width: ${props.trail_text && props.trail_text.length > 1 ? '28' : '20'}px; height: 20px; background: ${color}; border-radius: 3px; margin-right: 8px; display: flex; align-items: center; justify-content: center; color: ${textColor}; font-weight: bold; font-size: ${props.trail_text ? '11' : '14'}px;">${symbol}</div>`;
                 html += `<strong style="font-size: 14px;">${props.name || 'Unnamed Route'}</strong>`;
                 html += `</div>`;
 
