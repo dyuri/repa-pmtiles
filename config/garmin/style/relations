@@ -5,32 +5,90 @@
 
 # HIKING ROUTE RELATIONS
 # These match the Lua: type=route & (route=hiking | route=foot)
-# The relation_scan_function accepts these, relation_function outputs them
+# Extract trail color from OSMC symbol format: waycolor:background:foreground:text:textcolor
 
-type=route & route=hiking {
-    # Extract OSMC symbol components
-    # OSMC format: waycolor:background:foreground:text:textcolor
-    # Example: red:white:red_bar or yellow:white::MZ:yellow
+# Match specific OSMC color patterns and ACCUMULATE colors on ways
+# When a way belongs to multiple colored routes, we need all colors (semicolon-separated)
 
-    # Apply the route to its member ways
+type=route & route=hiking & osmc:symbol~'red:.*' {
     apply {
-        # Mark as part of hiking route
+        set hiking_red=yes;
+        add mkgmap:route_name='${name}';
+        add mkgmap:route_ref='${ref}';
+    }
+}
+type=route & route=hiking & osmc:symbol~'blue:.*' {
+    apply {
+        set hiking_blue=yes;
+        add mkgmap:route_name='${name}';
+        add mkgmap:route_ref='${ref}';
+    }
+}
+type=route & route=hiking & osmc:symbol~'yellow:.*' {
+    apply {
+        set hiking_yellow=yes;
+        add mkgmap:route_name='${name}';
+        add mkgmap:route_ref='${ref}';
+    }
+}
+type=route & route=hiking & osmc:symbol~'green:.*' {
+    apply {
+        set hiking_green=yes;
+        add mkgmap:route_name='${name}';
+        add mkgmap:route_ref='${ref}';
+    }
+}
+type=route & route=hiking & osmc:symbol~'orange:.*' {
+    apply {
+        set hiking_orange=yes;
+        add mkgmap:route_name='${name}';
+        add mkgmap:route_ref='${ref}';
+    }
+}
+type=route & route=hiking & osmc:symbol~'purple:.*' {
+    apply {
+        set hiking_purple=yes;
+        add mkgmap:route_name='${name}';
+        add mkgmap:route_ref='${ref}';
+    }
+}
+type=route & route=hiking & osmc:symbol~'white:.*' {
+    apply {
+        set hiking_white=yes;
+        add mkgmap:route_name='${name}';
+        add mkgmap:route_ref='${ref}';
+    }
+}
+type=route & route=hiking & osmc:symbol~'black:.*' {
+    apply {
+        set hiking_black=yes;
+        add mkgmap:route_name='${name}';
+        add mkgmap:route_ref='${ref}';
+    }
+}
+
+# Fallback: Routes with explicit color tag but no OSMC symbol
+type=route & route=hiking & color=red {
+    apply { set hiking_red=yes; add mkgmap:route_name='${name}'; add mkgmap:route_ref='${ref}'; }
+}
+type=route & route=hiking & color=blue {
+    apply { set hiking_blue=yes; add mkgmap:route_name='${name}'; add mkgmap:route_ref='${ref}'; }
+}
+type=route & route=hiking & color=yellow {
+    apply { set hiking_yellow=yes; add mkgmap:route_name='${name}'; add mkgmap:route_ref='${ref}'; }
+}
+type=route & route=hiking & color=green {
+    apply { set hiking_green=yes; add mkgmap:route_name='${name}'; add mkgmap:route_ref='${ref}'; }
+}
+
+# Generic hiking routes without specific color - mark as generic hiking trail
+# This should match ALL hiking routes as a fallback
+type=route & route=hiking {
+    apply {
         set hiking=yes;
-
-        # Copy route name if available
-        set route_name='${name}';
-
-        # Copy OSMC symbol
-        set osmc:symbol='${osmc:symbol}';
-
-        # Copy route ref
-        set route_ref='${ref}';
-
-        # Copy color
-        set route_color='${color}';
-
-        # Copy network type (local, regional, national, international)
-        set route_network='${network}';
+        set hiking_route=yes;
+        add mkgmap:route_name='${name}';
+        add mkgmap:route_ref='${ref}';
     }
 }
 

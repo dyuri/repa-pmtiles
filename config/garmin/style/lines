@@ -6,24 +6,48 @@
 # Hiking routes from relations (processed in relations file)
 # These get converted to ways with special attributes
 
-# TRAILS - Main hiking features
+# TRAILS - Main hiking features with route colors
 # Match the Lua config: highway=path|footway|cycleway|bridleway|track|steps
+# Trail colors from route relations (applied by relations file)
+
+# DEBUG: Check if ANY hiking routes are detected (should render as 0x29 if relations work)
+(highway=path | highway=footway | highway=track) & hiking_route=yes [0x29 resolution 22 continue]
+
+# Colored hiking trails - check for individual color flags set by relations file
+# Each color gets its own Garmin type code for different visual appearance
+# Using continue so a way can be drawn multiple times if it's part of multiple routes
+# Type codes 0x2a-0x31 chosen to avoid conflicts with roads/tracks
+
+(highway=path | highway=footway | highway=track) & hiking_red=yes [0x2a resolution 22 continue]
+(highway=path | highway=footway | highway=track) & hiking_blue=yes [0x2b resolution 22 continue]
+(highway=path | highway=footway | highway=track) & hiking_yellow=yes [0x2c resolution 22 continue]
+(highway=path | highway=footway | highway=track) & hiking_green=yes [0x2d resolution 22 continue]
+(highway=path | highway=footway | highway=track) & hiking_orange=yes [0x2e resolution 22 continue]
+(highway=path | highway=footway | highway=track) & hiking_purple=yes [0x2f resolution 22 continue]
+(highway=path | highway=footway | highway=track) & hiking_white=yes [0x30 resolution 22 continue]
+(highway=path | highway=footway | highway=track) & hiking_black=yes [0x31 resolution 22 continue]
+
+# Add route names as labels - mkgmap:route_name may contain multiple names (semicolon-separated)
+(highway=path | highway=footway | highway=track) & mkgmap:route_name=* {
+    name '${mkgmap:route_name}' | '${mkgmap:route_ref}' | '${name}'
+}
 
 # Paths with SAC scale difficulty
-highway=path & sac_scale=demanding_alpine_hiking [0x16 resolution 24 continue]
-highway=path & sac_scale=alpine_hiking [0x16 resolution 24 continue]
-highway=path & sac_scale=demanding_mountain_hiking [0x16 resolution 24 continue]
-highway=path & sac_scale=mountain_hiking [0x16 resolution 24 continue]
-highway=path & sac_scale=hiking [0x16 resolution 24 continue]
+highway=path & sac_scale=demanding_alpine_hiking [0x16 resolution 24]
+highway=path & sac_scale=alpine_hiking [0x16 resolution 24]
+highway=path & sac_scale=demanding_mountain_hiking [0x16 resolution 24]
+highway=path & sac_scale=mountain_hiking [0x16 resolution 24]
+highway=path & sac_scale=hiking [0x16 resolution 24]
 
-# Generic paths and footways
-highway=path [0x16 resolution 24 continue]
-highway=footway [0x16 resolution 24 continue]
-highway=steps [0x16 resolution 24 continue]
+# Generic paths and footways (fallback for unmarked trails)
+# NO CONTINUE - these should only match if no colored trail rule matched
+highway=path [0x16 resolution 24]
+highway=footway [0x16 resolution 24]
+highway=steps [0x16 resolution 24]
 
 # Bridleway and cycleway
-highway=bridleway [0x16 resolution 24 continue]
-highway=cycleway [0x16 resolution 24 continue]
+highway=bridleway [0x16 resolution 24]
+highway=cycleway [0x16 resolution 24]
 
 # Tracks by grade (matching Lua MinZoom(11))
 highway=track & tracktype=grade1 [0x0e resolution 22]
