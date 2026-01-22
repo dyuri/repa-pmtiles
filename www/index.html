@@ -93,9 +93,10 @@
         map.addControl(new maplibregl.ScaleControl());
 
         // Click handler for trail info
-        map.on('click', 'trails', (e) => {
+        map.on('click', (e) => {
+            // Check for both hiking routes and physical paths
             const features = map.queryRenderedFeatures(e.point, {
-                layers: ['trails']
+                layers: ['hiking-routes', 'physical-paths']
             });
 
             if (!features.length) return;
@@ -103,11 +104,108 @@
             const feature = features[0];
             const props = feature.properties;
 
-            let html = `<strong>${props.name || 'Unnamed trail'}</strong><br>`;
-            html += `Type: ${props.type}<br>`;
-            if (props.difficulty) html += `Difficulty: ${props.difficulty}<br>`;
-            if (props.surface) html += `Surface: ${props.surface}<br>`;
-            if (props.ref) html += `Ref: ${props.ref}<br>`;
+            // Color mapping for visual indicator
+            const colorMap = {
+                'red': '#E63946',
+                'blue': '#2A9D8F',
+                'green': '#52B788',
+                'yellow': '#F4D03F',
+                'orange': '#F77F00',
+                'purple': '#9D4EDD',
+                'black': '#2B2D42',
+                'brown': '#8B4513'
+            };
+
+            // Symbol mapping for better display
+            const symbolMap = {
+                'bar': '▬', 'stripe': '▬',
+                'cross': '+', 'x': '✕',
+                'circle': '●', 'dot': '●',
+                'rectangle': '▮',
+                'triangle': '▲',
+                'pointer': '▶',
+                'diamond': '◆'
+            };
+
+            let html = '<div style="min-width: 200px;">';
+
+            // Title with color indicator
+            if (props.class === 'route') {
+                // Hiking route (relation)
+                const color = colorMap[props.trail_color] || '#888';
+                const symbol = symbolMap[props.trail_symbol] || props.trail_symbol || '●';
+
+                html += `<div style="display: flex; align-items: center; margin-bottom: 8px;">`;
+                html += `<div style="width: 20px; height: 20px; background: ${color}; border-radius: 3px; margin-right: 8px; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 14px;">${symbol}</div>`;
+                html += `<strong style="font-size: 14px;">${props.name || 'Unnamed Route'}</strong>`;
+                html += `</div>`;
+
+                // Route details
+                html += `<div style="font-size: 12px; color: #555;">`;
+                if (props.ref) html += `<div><strong>Ref:</strong> ${props.ref}</div>`;
+                if (props.trail_color) html += `<div><strong>Color:</strong> ${props.trail_color}</div>`;
+                if (props.osmc_symbol) html += `<div><strong>OSMC:</strong> <code style="font-size: 10px;">${props.osmc_symbol}</code></div>`;
+                if (props.route) html += `<div><strong>Type:</strong> ${props.route}</div>`;
+                html += `<div style="margin-top: 4px; font-style: italic; color: #777;">Hiking Route</div>`;
+                html += `</div>`;
+            } else {
+                // Physical path (way)
+                html += `<strong style="font-size: 14px;">${props.name || 'Path'}</strong><br>`;
+                html += `<div style="font-size: 12px; color: #555; margin-top: 5px;">`;
+                if (props.type) html += `<div><strong>Type:</strong> ${props.type}</div>`;
+                if (props.surface) html += `<div><strong>Surface:</strong> ${props.surface}</div>`;
+                if (props.difficulty) html += `<div><strong>SAC scale:</strong> ${props.difficulty}</div>`;
+                if (props.visibility) html += `<div><strong>Visibility:</strong> ${props.visibility}</div>`;
+                html += `<div style="margin-top: 4px; font-style: italic; color: #777;">Physical Path</div>`;
+                html += `</div>`;
+            }
+
+            html += '</div>';
+
+            new maplibregl.Popup()
+                .setLngLat(e.lngLat)
+                .setHTML(html)
+                .addTo(map);
+        });
+
+        // Click handler for POIs (points of interest)
+        map.on('click', 'pois', (e) => {
+            const features = map.queryRenderedFeatures(e.point, {
+                layers: ['pois']
+            });
+
+            if (!features.length) return;
+
+            const feature = features[0];
+            const props = feature.properties;
+
+            // Icon mapping for POI types
+            const iconMap = {
+                'peak': '⛰️',
+                'viewpoint': '👁️',
+                'alpine_hut': '🏠',
+                'shelter': '⛺',
+                'wilderness_hut': '🏚️',
+                'drinking_water': '💧',
+                'spring': '🌊',
+                'saddle': '⛰️',
+                'cave_entrance': '🕳️'
+            };
+
+            let html = '<div style="min-width: 180px;">';
+            const icon = iconMap[props.type] || '📍';
+
+            html += `<div style="display: flex; align-items: center; margin-bottom: 8px;">`;
+            html += `<span style="font-size: 24px; margin-right: 8px;">${icon}</span>`;
+            html += `<strong style="font-size: 14px;">${props.name || props.type}</strong>`;
+            html += `</div>`;
+
+            html += `<div style="font-size: 12px; color: #555;">`;
+            html += `<div><strong>Type:</strong> ${props.type.replace('_', ' ')}</div>`;
+            if (props.elevation) html += `<div><strong>Elevation:</strong> ${props.elevation}m</div>`;
+            html += `</div>`;
+
+            html += '</div>';
 
             new maplibregl.Popup()
                 .setLngLat(e.lngLat)
@@ -116,12 +214,14 @@
         });
 
         // Change cursor on hover
-        map.on('mouseenter', 'trails', () => {
-            map.getCanvas().style.cursor = 'pointer';
-        });
+        ['hiking-routes', 'physical-paths', 'pois'].forEach(layer => {
+            map.on('mouseenter', layer, () => {
+                map.getCanvas().style.cursor = 'pointer';
+            });
 
-        map.on('mouseleave', 'trails', () => {
-            map.getCanvas().style.cursor = '';
+            map.on('mouseleave', layer, () => {
+                map.getCanvas().style.cursor = '';
+            });
         });
 
         // Log when map loads successfully
