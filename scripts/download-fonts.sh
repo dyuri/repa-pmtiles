@@ -34,7 +34,8 @@ for font in "${FONTS[@]}"; do
 
     # Download common Unicode ranges (0-65535, step 256)
     # We'll download the most common ranges to save space
-    for start in {0..9472..256}; do
+    # Extended to 10240 to include geometric shapes used for trail symbols (▲, ●, ■, etc.)
+    for start in {0..9984..256}; do
         end=$((start + 255))
         url_font=$(echo "$font" | sed 's/ /%20/g')
 

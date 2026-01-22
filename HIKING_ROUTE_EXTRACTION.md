@@ -264,8 +264,41 @@ map.addLayer({
 4. ✅ **relation_function() is the correct function** for outputting relation geometries
 5. ✅ **Debug configurations help isolate problems** quickly
 
+## Additional Issue: Missing Font Glyphs
+
+### Problem
+After fixing the relation extraction, tiles appeared empty at zoom 13+ even though data was present. The browser console showed:
+```
+404 (Not Found): http://localhost:8080/fonts/Noto%20Sans%20Regular/9728-9983.pbf
+404 (Not Found): http://localhost:8080/fonts/Noto%20Sans%20Regular/9984-10239.pbf
+```
+
+### Root Cause
+The font download script (`scripts/download-fonts.sh`) only downloaded Unicode ranges 0-9472, missing ranges 9728-10239 which contain:
+- Geometric shapes: ▲, ●, ■, ◆, ▶, ▬, ▮
+- Symbols: +, ✕, ⊥, ⌐, /, \
+- Other trail markers used in the `trail-symbols` layer
+
+When MapLibre tried to render the `trail-symbols` layer at zoom 13+, it couldn't find these glyphs, causing the entire tile rendering to fail (not just symbols, but all layers in that tile).
+
+### Solution
+Updated `scripts/download-fonts.sh` to download ranges up to 9984, ensuring all geometric shapes are included:
+```bash
+for start in {0..9984..256}; do  # Extended from 9472 to 9984
+```
+
+This ensures `make fonts` downloads complete font coverage for trail symbols.
+
+### Manual Fix (Already Applied)
+Downloaded missing ranges from OpenMapTiles:
+- `9728-9983.pbf` (Dingbats/Geometric shapes)
+- `9984-10239.pbf` (More geometric shapes)
+
+For both `Noto Sans Regular` and `Noto Sans Bold`.
+
 ---
 
 **Investigation Date:** January 20, 2026
-**Status:** ✅ Resolved
+**Follow-up Fix:** January 22, 2026
+**Status:** ✅ Fully Resolved
 **Impact:** Critical - Enables hiking route visualization with proper colors, symbols, and names
