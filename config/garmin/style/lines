@@ -1,0 +1,85 @@
+# -------------------------------------------------------------------
+# Hungarian Hiking Map - Line Features
+# Based on process-hiking.lua trail extraction logic
+# -------------------------------------------------------------------
+
+# Hiking routes from relations (processed in relations file)
+# These get converted to ways with special attributes
+
+# TRAILS - Main hiking features
+# Match the Lua config: highway=path|footway|cycleway|bridleway|track|steps
+
+# Paths with SAC scale difficulty
+highway=path & sac_scale=demanding_alpine_hiking [0x16 resolution 24 continue]
+highway=path & sac_scale=alpine_hiking [0x16 resolution 24 continue]
+highway=path & sac_scale=demanding_mountain_hiking [0x16 resolution 24 continue]
+highway=path & sac_scale=mountain_hiking [0x16 resolution 24 continue]
+highway=path & sac_scale=hiking [0x16 resolution 24 continue]
+
+# Generic paths and footways
+highway=path [0x16 resolution 24 continue]
+highway=footway [0x16 resolution 24 continue]
+highway=steps [0x16 resolution 24 continue]
+
+# Bridleway and cycleway
+highway=bridleway [0x16 resolution 24 continue]
+highway=cycleway [0x16 resolution 24 continue]
+
+# Tracks by grade (matching Lua MinZoom(11))
+highway=track & tracktype=grade1 [0x0e resolution 22]
+highway=track & tracktype=grade2 [0x0f resolution 22]
+highway=track & tracktype=grade3 [0x10 resolution 22]
+highway=track & tracktype=grade4 [0x10 resolution 23]
+highway=track & tracktype=grade5 [0x10 resolution 23]
+highway=track [0x0a resolution 22]
+
+# ROADS - For context (matching Lua zoom levels)
+# Major roads from zoom 8
+highway=motorway [0x01 resolution 16 continue]
+highway=motorway_link [0x01 resolution 18]
+highway=trunk [0x02 resolution 16 continue]
+highway=trunk_link [0x02 resolution 18]
+
+# Primary roads from zoom 9
+highway=primary [0x03 resolution 18 continue]
+highway=primary_link [0x03 resolution 20]
+
+# Secondary/tertiary from zoom 10
+highway=secondary [0x04 resolution 20 continue]
+highway=secondary_link [0x04 resolution 20]
+highway=tertiary [0x05 resolution 20 continue]
+highway=tertiary_link [0x05 resolution 20]
+
+# Smaller roads from zoom 11 (matching Lua MinZoom(11))
+highway=unclassified [0x06 resolution 22]
+highway=residential [0x06 resolution 22]
+highway=service [0x07 resolution 23]
+highway=living_street [0x06 resolution 22]
+highway=road [0x06 resolution 22]
+highway=minor [0x06 resolution 22]
+
+# WATERWAYS - Matching Lua config
+waterway=river [0x1f resolution 18 continue]
+waterway=stream [0x18 resolution 22 continue]
+waterway=canal [0x1f resolution 21 continue]
+waterway=drain [0x18 resolution 23]
+waterway=ditch [0x18 resolution 24]
+
+# BOUNDARIES - Administrative boundaries (matching Lua)
+boundary=administrative & admin_level=2 [0x1e resolution 12]
+boundary=administrative & admin_level=4 [0x1d resolution 16]
+boundary=administrative & admin_level=6 [0x1c resolution 18]
+boundary=administrative & admin_level=8 [0x1c resolution 20]
+
+# Add name labels where available
+(highway=path | highway=footway | highway=track) & name=* {
+    name '${name}' | '${ref}'
+}
+
+highway=* & ref=* {
+    name '${ref}'
+}
+
+waterway=* & name=* {
+    name '${name}'
+}

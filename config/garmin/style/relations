@@ -1,0 +1,90 @@
+# -------------------------------------------------------------------
+# Hungarian Hiking Map - Relations Processing
+# Based on process-hiking.lua relation_function() logic
+# -------------------------------------------------------------------
+
+# HIKING ROUTE RELATIONS
+# These match the Lua: type=route & (route=hiking | route=foot)
+# The relation_scan_function accepts these, relation_function outputs them
+
+type=route & route=hiking {
+    # Extract OSMC symbol components
+    # OSMC format: waycolor:background:foreground:text:textcolor
+    # Example: red:white:red_bar or yellow:white::MZ:yellow
+
+    # Apply the route to its member ways
+    apply {
+        # Mark as part of hiking route
+        set hiking=yes;
+
+        # Copy route name if available
+        set route_name='${name}';
+
+        # Copy OSMC symbol
+        set osmc:symbol='${osmc:symbol}';
+
+        # Copy route ref
+        set route_ref='${ref}';
+
+        # Copy color
+        set route_color='${color}';
+
+        # Copy network type (local, regional, national, international)
+        set route_network='${network}';
+    }
+}
+
+# Foot routes (also hiking)
+type=route & route=foot {
+    apply {
+        set hiking=yes;
+        set route_name='${name}';
+        set osmc:symbol='${osmc:symbol}';
+        set route_ref='${ref}';
+        set route_color='${color}';
+        set route_network='${network}';
+    }
+}
+
+# MTB routes (useful context)
+type=route & route=mtb {
+    apply {
+        set mtb=yes;
+        set route_name='${name}';
+        set route_ref='${ref}';
+        set route_color='${color}';
+    }
+}
+
+# Bicycle routes
+type=route & route=bicycle {
+    apply {
+        set bicycle=yes;
+        set route_name='${name}';
+        set route_ref='${ref}';
+        set route_color='${color}';
+    }
+}
+
+# Multipolygon relations for areas
+type=multipolygon {
+    # Apply tags from relation to the outline
+    apply {
+        # Copy relevant tags from relation to ways
+        set natural='${natural}';
+        set landuse='${landuse}';
+        set leisure='${leisure}';
+        set waterway='${waterway}';
+        set name='${name}';
+    }
+}
+
+# Administrative boundaries
+type=boundary & boundary=administrative {
+    # Apply admin_level to member ways
+    apply {
+        set boundary=administrative;
+        set admin_level='${admin_level}';
+        set name='${name}';
+    }
+}

@@ -1,0 +1,96 @@
+# -------------------------------------------------------------------
+# Hungarian Hiking Map - Point Features (POIs)
+# Based on process-hiking.lua node_function() logic
+# Matching MinZoom(12) for hiking-relevant POIs
+# -------------------------------------------------------------------
+
+# PEAKS - Most important hiking feature
+natural=peak {
+    name '${name} ${ele|def:}' |
+         '${name}' |
+         'Peak ${ele|def:}'
+} [0x6616 resolution 21]
+
+# VIEWPOINTS
+tourism=viewpoint {
+    name '${name}' | 'Viewpoint'
+} [0x2c0c resolution 22]
+
+# ALPINE HUTS AND SHELTERS
+tourism=alpine_hut {
+    name '${name}' | 'Alpine Hut'
+} [0x2b06 resolution 22]
+
+tourism=wilderness_hut {
+    name '${name}' | 'Wilderness Hut'
+} [0x2b06 resolution 22]
+
+amenity=shelter {
+    name '${name}' | 'Shelter'
+} [0x2b06 resolution 22]
+
+# WATER SOURCES - Critical for hiking
+amenity=drinking_water {
+    name '${name}' | 'Drinking Water'
+} [0x5000 resolution 22]
+
+natural=spring {
+    name '${name}' | 'Spring'
+} [0x6511 resolution 22]
+
+# SADDLES AND PASSES
+natural=saddle {
+    name '${name} ${ele|def:}' |
+         '${name}' |
+         'Saddle'
+} [0x6616 resolution 22]
+
+# CAVE ENTRANCES
+natural=cave_entrance {
+    name '${name}' | 'Cave'
+} [0x6601 resolution 22]
+
+# PLACE LABELS - Matching Lua place handling
+# Cities from zoom 6
+place=city {
+    name '${name}'
+} [0x0100 resolution 14]
+
+# Towns from zoom 8
+place=town {
+    name '${name}'
+} [0x0800 resolution 16]
+
+# Villages and hamlets from zoom 10
+place=village {
+    name '${name}'
+} [0x0900 resolution 18]
+
+place=hamlet {
+    name '${name}'
+} [0x0b00 resolution 20]
+
+# ADDITIONAL USEFUL POIS
+# Information
+tourism=information & information=guidepost {
+    name '${name}' | 'Guidepost'
+} [0x4c00 resolution 23]
+
+tourism=information {
+    name '${name}' | 'Information'
+} [0x4c00 resolution 23]
+
+# Parking
+amenity=parking [0x2f08 resolution 22]
+
+# Restaurants and cafes
+amenity=restaurant {
+    name '${name}' | 'Restaurant'
+} [0x2a00 resolution 22]
+
+amenity=cafe {
+    name '${name}' | 'Cafe'
+} [0x2a0e resolution 23]
+
+# Toilets
+amenity=toilets [0x4e00 resolution 23]

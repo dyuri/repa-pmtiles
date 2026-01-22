@@ -1,0 +1,35 @@
+# -------------------------------------------------------------------
+# Hungarian Hiking Map - Map Information
+# -------------------------------------------------------------------
+
+# Style information
+style-name: Hungarian Hiking
+version: 1.0
+summary: Hiking trails and POIs for Hungary
+
+# Map identification
+family-id: 7777
+product-id: 1
+
+# Code page for proper character encoding
+code-page: 1252
+
+# Copyright notice
+copyright: Map data © OpenStreetMap contributors
+
+# Description
+description: Hungarian hiking trails with POIs and topographic features
+
+# Levels - zoom level definitions
+# Format: level:resolution (higher resolution = more detail)
+# Level 0 (most detailed) to Level 6 (overview)
+levels = 0:24, 1:23, 2:22, 3:21, 4:20, 5:19, 6:18
+
+# Overview levels for device overview map
+overview-levels = 4:20, 5:19, 6:18, 7:17, 8:16
+
+# Driving side
+driving-side: right
+
+# Additional options
+latin1

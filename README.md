@@ -11,6 +11,7 @@ A complete Docker-based solution for generating and serving Hungarian hiking tra
 - **Lightweight**: Efficient PMTiles format reduces bandwidth and storage
 - **Self-hosted Fonts**: No external dependencies for map labels
 - **Topographic Maps**: Optional elevation contour lines (20m intervals)
+- **Garmin Device Maps**: Generate installable IMG files for GPS devices (NEW!)
 
 ## Quick Start
 
@@ -126,6 +127,31 @@ nano www/style.json  # Edit the JSON directly
 ```
 
 See `STYLE-EDITING.md` for a complete guide with examples and tips.
+
+## Generating Garmin Device Maps (NEW!)
+
+Create installable maps for Garmin GPS devices from the same OSM data:
+
+```bash
+# One-time: Build the Garmin tools container
+make garmin-image
+
+# Generate Garmin IMG map file
+make garmin
+
+# Install to connected device
+./scripts/garmin/install-to-device.sh
+```
+
+The generated `gmapsupp.img` file (~400-600MB) can be copied to any compatible Garmin device (eTrex, Oregon, Montana, GPSMAP series).
+
+**Benefits:**
+- Same trail data as web map
+- Offline navigation on dedicated GPS hardware
+- Optional routing support
+- Works in BaseCamp for route planning
+
+See `GARMIN-MAPS.md` for complete documentation, customization options, and troubleshooting.
 
 ## Adding Elevation Contours (Optional)
 

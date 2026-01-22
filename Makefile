@@ -1,4 +1,5 @@
 .PHONY: help download fonts setup generate contours up down restart logs clean all
+.PHONY: garmin-image garmin garmin-clean all-maps
 
 help:
 	@echo "Hungarian Hiking Maps - Docker Setup"
@@ -18,6 +19,12 @@ help:
 	@echo ""
 	@echo "Topographic maps:"
 	@echo "  make topo        - Full topographic setup with contours"
+	@echo ""
+	@echo "Garmin device maps:"
+	@echo "  make garmin-image    - Build Docker image for Garmin tools"
+	@echo "  make garmin          - Generate Garmin IMG map file"
+	@echo "  make garmin-clean    - Clean up Garmin build artifacts"
+	@echo "  make all-maps        - Generate both PMTiles and Garmin maps"
 	@echo ""
 
 download:
@@ -87,7 +94,41 @@ logs:
 clean:
 	@echo "Cleaning up temporary files..."
 	@rm -f tiles/*.mbtiles
+	@rm -rf tmp/tilemaker_store
 	@echo "Done!"
+
+# Garmin map generation
+garmin-image:
+	@echo "Building Garmin builder Docker image..."
+	@./scripts/garmin/build-garmin-image.sh
+
+garmin: garmin-image
+	@echo "Generating Garmin hiking map..."
+	@./scripts/generate-garmin.sh
+
+garmin-clean:
+	@echo "Cleaning Garmin build artifacts..."
+	@rm -rf garmin-output/work
+	@rm -f garmin-output/*.img
+	@rm -f garmin-output/*.txt
+	@echo "Done!"
+
+# Generate both map formats
+all-maps: download fonts generate garmin
+	@echo ""
+	@echo "=========================================="
+	@echo "All maps generated!"
+	@echo "=========================================="
+	@echo ""
+	@echo "PMTiles (web):"
+	@echo "  tiles/hungary-hiking.pmtiles"
+	@echo ""
+	@echo "Garmin IMG (device):"
+	@echo "  garmin-output/gmapsupp.img"
+	@echo ""
+	@echo "Start web server: make up"
+	@echo "Install to device: ./scripts/garmin/install-to-device.sh"
+	@echo ""
 
 all: download fonts generate up
 	@echo ""

@@ -1,0 +1,23 @@
+# -------------------------------------------------------------------
+# Hungarian Hiking Map - Style Options
+# -------------------------------------------------------------------
+
+# Preserve important tags for routing and rendering
+extra-used-tags = sac_scale,trail_visibility,surface,tracktype,mtb:scale
+
+# Name search options
+name-tag-list = name,name:en,int_name,name:hu
+
+# Sort by name for better device search
+sort-by-name
+
+# Transparency for overlays
+transparent
+
+# Add contour lines if DEM data is available
+# (This requires separate contour generation)
+# check-styles
+
+# Allow multiple objects at same location
+# Important for overlapping trails
+allow-reverse-merge
