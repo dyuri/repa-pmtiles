@@ -10,13 +10,9 @@
 # Match the Lua config: highway=path|footway|cycleway|bridleway|track|steps
 # Trail colors from route relations (applied by relations file)
 
-# DEBUG: Check if ANY hiking routes are detected (should render as 0x29 if relations work)
-(highway=path | highway=footway | highway=track) & hiking_route=yes [0x29 resolution 22 continue]
-
-# Colored hiking trails - check for individual color flags set by relations file
-# Each color gets its own Garmin type code for different visual appearance
-# Using continue so a way can be drawn multiple times if it's part of multiple routes
-# Type codes 0x2a-0x31 chosen to avoid conflicts with roads/tracks
+# Colored hiking trails - each gets unique type code for TYP file styling
+# When multiple routes overlap, different line patterns (in TYP) make them distinguishable
+# Type codes 0x2a-0x31: will be styled with different colors/patterns in TYP file
 
 (highway=path | highway=footway | highway=track) & hiking_red=yes [0x2a resolution 22 continue]
 (highway=path | highway=footway | highway=track) & hiking_blue=yes [0x2b resolution 22 continue]

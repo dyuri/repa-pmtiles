@@ -1,0 +1,175 @@
+;
+; Hungarian Hiking Trails TYP File
+; Defines colors and patterns for hiking trail type codes 0x2a-0x31
+; Compile with: java -jar TYPViewer.jar hiking.txt hiking.typ
+;
+
+[_id]
+ProductCode=1
+FID=7777
+CodePage=1252
+
+[_drawOrder]
+Type=0x2a,1
+Type=0x2b,2
+Type=0x2c,3
+Type=0x2d,4
+Type=0x2e,5
+Type=0x2f,6
+Type=0x30,7
+Type=0x31,8
+
+;
+; HIKING TRAIL LINES
+; Each color uses different pattern and border style for visibility when overlapping
+;
+
+; 0x2a - RED HIKING TRAIL
+; Solid red line with thick borders
+[_line]
+Type=0x2a
+String1=0x04,Red trail
+String2=0x01,Hiking route
+ExtendedLabels=Y
+LineWidth=3
+BorderWidth=1
+Xpm="0 0 2 0"
+"! c #E63946"
+"- c none"
+String=Red hiking trail
+UseOrientation=N
+CustomColor=Yes
+DayCustomColor=#E63946
+NightCustomColor=#A62639
+
+; 0x2b - BLUE HIKING TRAIL
+; Dashed blue line
+[_line]
+Type=0x2b
+String1=0x04,Blue trail
+String2=0x01,Hiking route
+ExtendedLabels=Y
+LineWidth=3
+BorderWidth=1
+Xpm="0 0 2 0"
+"! c #2A9D8F"
+"- c none"
+"!-!-"
+String=Blue hiking trail
+UseOrientation=N
+CustomColor=Yes
+DayCustomColor=#2A9D8F
+NightCustomColor=#1D6B61
+
+; 0x2c - YELLOW HIKING TRAIL
+; Dotted yellow line (visible on all backgrounds)
+[_line]
+Type=0x2c
+String1=0x04,Yellow trail
+String2=0x01,Hiking route
+ExtendedLabels=Y
+LineWidth=3
+BorderWidth=1
+Xpm="0 0 2 0"
+"! c #F4D03F"
+"- c none"
+"!-"
+String=Yellow hiking trail
+UseOrientation=N
+CustomColor=Yes
+DayCustomColor=#F4D03F
+NightCustomColor=#B8992E
+
+; 0x2d - GREEN HIKING TRAIL
+; Double-line green (solid with borders)
+[_line]
+Type=0x2d
+String1=0x04,Green trail
+String2=0x01,Hiking route
+ExtendedLabels=Y
+LineWidth=3
+BorderWidth=2
+Xpm="0 0 2 0"
+"! c #52B788"
+"- c none"
+String=Green hiking trail
+UseOrientation=N
+CustomColor=Yes
+DayCustomColor=#52B788
+NightCustomColor=#3A8561
+
+; 0x2e - ORANGE HIKING TRAIL
+; Long-dash orange line
+[_line]
+Type=0x2e
+String1=0x04,Orange trail
+String2=0x01,Hiking route
+ExtendedLabels=Y
+LineWidth=3
+BorderWidth=1
+Xpm="0 0 2 0"
+"! c #F77F00"
+"- c none"
+"!!!-"
+String=Orange hiking trail
+UseOrientation=N
+CustomColor=Yes
+DayCustomColor=#F77F00
+NightCustomColor=#B45F00
+
+; 0x2f - PURPLE HIKING TRAIL
+; Dash-dot purple line
+[_line]
+Type=0x2f
+String1=0x04,Purple trail
+String2=0x01,Hiking route
+ExtendedLabels=Y
+LineWidth=3
+BorderWidth=1
+Xpm="0 0 2 0"
+"! c #9D4EDD"
+"- c none"
+"!!-!-"
+String=Purple hiking trail
+UseOrientation=N
+CustomColor=Yes
+DayCustomColor=#9D4EDD
+NightCustomColor=#7239A3
+
+; 0x30 - WHITE HIKING TRAIL
+; White line with thick dark border (visible on all backgrounds)
+[_line]
+Type=0x30
+String1=0x04,White trail
+String2=0x01,Hiking route
+ExtendedLabels=Y
+LineWidth=3
+BorderWidth=2
+Xpm="0 0 2 0"
+"! c #FFFFFF"
+"- c #000000"
+String=White hiking trail
+UseOrientation=N
+CustomColor=Yes
+DayCustomColor=#FFFFFF
+NightCustomColor=#CCCCCC
+
+; 0x31 - BLACK HIKING TRAIL
+; Black line with white border
+[_line]
+Type=0x31
+String1=0x04,Black trail
+String2=0x01,Hiking route
+ExtendedLabels=Y
+LineWidth=3
+BorderWidth=1
+Xpm="0 0 2 0"
+"! c #2B2D42"
+"- c #FFFFFF"
+String=Black hiking trail
+UseOrientation=N
+CustomColor=Yes
+DayCustomColor=#2B2D42
+NightCustomColor=#000000
+
+[End]

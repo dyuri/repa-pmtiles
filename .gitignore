@@ -12,6 +12,7 @@ tiles/*.pmtiles
 
 # Garmin maps
 garmin-output/
+config/garmin/*.typ
 
 # Downloaded fonts
 www/fonts/

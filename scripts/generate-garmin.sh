@@ -29,6 +29,14 @@ if [ ! -d "$CONFIG_DIR/style" ]; then
     exit 1
 fi
 
+# Compile TYP file if it doesn't exist
+if [ ! -f "$CONFIG_DIR/hiking.typ" ]; then
+    echo "TYP file not found, compiling from hiking.txt..."
+    echo ""
+    "$SCRIPT_DIR/garmin/compile-typ.sh"
+    echo ""
+fi
+
 # Create output directories
 mkdir -p "$OUTPUT_DIR" "$WORK_DIR"
 
@@ -107,7 +115,8 @@ podman run --rm \
     --max-jobs \
     --output-dir=/output \
     --gmapsupp \
-    /work/7*.osm.pbf"
+    /work/7*.osm.pbf \
+    /config/hiking.typ"
 
 if [ $? -ne 0 ]; then
     echo "Warning: mkgmap completed with errors (may be non-fatal)"
