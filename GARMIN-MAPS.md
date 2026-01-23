@@ -79,8 +79,102 @@ The Garmin map includes:
 
 **Route Relations:**
 - Hiking route names and references
-- OSMC symbol information
+- OSMC symbol information (colored trail markers)
 - Network type (local/regional/national)
+- Color-coded trails with distinct patterns when overlapping
+
+## Colored Hiking Trails
+
+### How It Works
+
+Unlike web maps (PMTiles) that can apply colors at runtime, Garmin maps use **compile-time styling** with TYP files to display colored hiking trails.
+
+### Trail Color Detection
+
+The map automatically extracts trail colors from OSMC symbols in OSM route relations:
+
+**OSMC Format:** `waycolor:background:foreground:text:textcolor`
+
+**Examples:**
+- `red:white:red_bar` → Red trail
+- `blue:white::K:blue` → Blue trail with "K" marker
+- `yellow:white:yellow_circle` → Yellow trail
+
+The `relations` file in the style detects these patterns and applies individual flags to way members:
+- Red routes → `hiking_red=yes`
+- Blue routes → `hiking_blue=yes`
+- Yellow routes → `hiking_yellow=yes`
+- And so on for green, orange, purple, white, black
+
+### Multiple Routes on Same Way
+
+When a hiking path is part of multiple colored routes (common in trail networks), our approach handles this correctly:
+
+1. **Relations file** sets individual flags for each color (e.g., both `hiking_red=yes` AND `hiking_blue=yes`)
+2. **Lines file** checks each flag separately with `continue` statements
+3. Each matching rule renders the trail with a different type code
+4. **TYP file** defines unique colors and line patterns for each type code
+
+**Result:** Overlapping trails render with different patterns, making all routes visible.
+
+### Trail Color Mapping
+
+| Color | Type Code | Line Pattern | Day Color | Night Color |
+|-------|-----------|--------------|-----------|-------------|
+| Red | 0x2a | Solid thick | #E63946 | #A62639 |
+| Blue | 0x2b | Dashed | #2A9D8F | #1D6B61 |
+| Yellow | 0x2c | Dotted | #F4D03F | #B8992E |
+| Green | 0x2d | Double-border | #52B788 | #3A8561 |
+| Orange | 0x2e | Long-dash | #F77F00 | #B45F00 |
+| Purple | 0x2f | Dash-dot | #9D4EDD | #7239A3 |
+| White | 0x30 | Thick border | #FFFFFF | #CCCCCC |
+| Black | 0x31 | White border | #2B2D42 | #000000 |
+
+**Different line patterns** (solid, dashed, dotted, etc.) make overlapping routes visually distinguishable on device screens, compensating for the lack of spatial offsets like in web maps.
+
+### TYP File Compilation
+
+The map includes a custom TYP file (`config/garmin/hiking.typ`) that defines these colors and patterns:
+
+**Automatic Compilation:**
+```bash
+make garmin  # Automatically compiles hiking.txt → hiking.typ
+```
+
+**Manual Compilation:**
+```bash
+./scripts/garmin/compile-typ.sh
+```
+
+The TYP file is automatically included in the map generation process.
+
+### Customizing Trail Colors
+
+To modify trail colors or patterns:
+
+1. Edit `config/garmin/hiking.txt`
+2. Change the `DayCustomColor` and `NightCustomColor` values
+3. Modify the `Xpm` pattern (line pattern definition)
+4. Recompile: `./scripts/garmin/compile-typ.sh`
+5. Regenerate map: `make garmin`
+
+**Example - Making Red Trail Wider:**
+```
+[_line]
+Type=0x2a
+LineWidth=4        # Increase from 3 to 4
+BorderWidth=2      # Increase from 1 to 2
+DayCustomColor=#E63946
+```
+
+### Limitations
+
+Unlike the PMTiles version where trails can have spatial offsets to appear side-by-side:
+- Garmin trails **overlay** rather than offset spatially
+- Different **patterns** (not positions) distinguish overlapping trails
+- This is a fundamental limitation of the Garmin IMG format
+- On small device screens, 2-3 overlapping trails are still clearly distinguishable
+- More than 3 overlapping trails may become harder to distinguish
 
 ## Installation
 
@@ -253,16 +347,43 @@ make download
 make garmin
 ```
 
-### Trails Not Showing Color
+### Trails Not Showing Correct Colors
 
-**Cause:** Garmin devices show colors differently than web
+**Cause:** TYP file not compiled or not included in map
 
-**Note:** Colors are applied via the style rules. On some devices:
-- Night mode inverts colors
-- Monochrome devices show grayscale
+**Solution:**
+1. Check if TYP file exists:
+   ```bash
+   ls -l config/garmin/hiking.typ
+   ```
+
+2. If missing, compile it:
+   ```bash
+   ./scripts/garmin/compile-typ.sh
+   ```
+
+3. Regenerate map:
+   ```bash
+   make garmin
+   ```
+
+**Note on device rendering:**
+- Night mode may adjust colors automatically
+- Monochrome devices show patterns in grayscale
 - Older devices have limited color palettes
+- Different line patterns help distinguish trails even without color
 
-To enhance colors, edit the TYP file (advanced - see documentation).
+### Multiple Trails Not Visible on Same Path
+
+**Symptom:** Only one trail color visible where multiple routes overlap
+
+**Cause:** TYP file patterns not rendering properly on device
+
+**Solutions:**
+1. Verify TYP file is included in map (should be automatic)
+2. Try increasing line widths in `config/garmin/hiking.txt`
+3. Check device supports custom TYP files (most modern devices do)
+4. Some older firmware versions have TYP rendering bugs - update firmware if available
 
 ## Updating the Map
 
@@ -291,7 +412,9 @@ make garmin
 | **Routing** | No | Yes (optional) |
 | **Updates** | Replace file | Re-install |
 | **Offline Use** | Requires server | Built-in |
-| **Custom Colors** | Easy | Moderate (TYP file) |
+| **Trail Colors** | Runtime (JSON style) | Compile-time (TYP file) |
+| **Overlapping Trails** | Spatial offset | Pattern differentiation |
+| **Custom Colors** | Easy (edit JSON) | Moderate (edit TYP) |
 
 **Use PMTiles when:**
 - Planning routes at home
@@ -307,24 +430,137 @@ make garmin
 
 ## Advanced Topics
 
-### Creating Custom TYP File
+### Customizing the TYP File
 
-TYP files define how features render on the device (colors, patterns, icons).
+The map includes a pre-configured TYP file for colored hiking trails at `config/garmin/hiking.txt`.
 
-Tools:
+**TYP File Structure:**
+
+The TYP file is written in a text format and defines:
+- Line colors (day and night modes)
+- Line patterns (solid, dashed, dotted, etc.)
+- Line widths and borders
+- Labels and descriptions
+
+**Editing the TYP File:**
+
+Edit `config/garmin/hiking.txt` directly:
+
+```
+[_line]
+Type=0x2a                    # Red hiking trail
+LineWidth=3                  # Line thickness
+BorderWidth=1                # Border thickness
+DayCustomColor=#E63946       # Day mode color (hex)
+NightCustomColor=#A62639     # Night mode color (hex)
+Xpm="0 0 2 0"               # Pattern definition
+"! c #E63946"               # Pattern color
+"- c none"                  # Transparent
+"!-!-"                      # Pattern: dash-space-dash-space
+```
+
+**Common Patterns:**
+- Solid line: `"!!!!"` (all filled)
+- Dashed line: `"!-!-"` (alternating)
+- Dotted line: `"!-"` (short dash, space)
+- Long dash: `"!!!-"` (longer filled sections)
+- Dash-dot: `"!!-!-"` (long dash, short dash)
+
+**After editing:**
+```bash
+./scripts/garmin/compile-typ.sh  # Compile TYP
+make garmin                       # Rebuild map
+```
+
+**Visual TYP Editors** (optional):
 - [TYPWiz](http://www.pinns.co.uk/osm/typwiz.html) - Visual editor
 - [TYPViewer](http://www.pinns.co.uk/osm/typviewer.html) - Preview tool
 
-Process:
-1. Create TYP with TYPWiz
-2. Save as `config/garmin/hiking.typ`
-3. Add to mkgmap command in `scripts/generate-garmin.sh`:
-   ```bash
-   --family-name="Hungarian Hiking" \
-   --style-file=/config/style \
-   --family-id=7777 \
-   /config/hiking.typ \   # Add this line
-   ```
+These tools provide GUI interfaces but our text-based approach is simpler for version control.
+
+### Technical Implementation: How Colored Trails Work
+
+Understanding the complete flow from OSM data to colored trails on your device:
+
+**1. OSM Data Processing (Relations File)**
+
+`config/garmin/style/relations`:
+```
+type=route & route=hiking & osmc:symbol~'red:.*' {
+    apply {
+        set hiking_red=yes;
+        add mkgmap:route_name='${name}';
+        add mkgmap:route_ref='${ref}';
+    }
+}
+```
+
+- Matches hiking route relations with OSMC symbols
+- Extracts the color from the first part of `osmc:symbol` tag
+- Sets individual flags on member ways (not a single color tag)
+- Using `set` for flags (yes/no) and `add` for names (can accumulate)
+
+**2. Way Rendering (Lines File)**
+
+`config/garmin/style/lines`:
+```
+(highway=path | highway=footway | highway=track) & hiking_red=yes [0x2a resolution 22 continue]
+(highway=path | highway=footway | highway=track) & hiking_blue=yes [0x2b resolution 22 continue]
+```
+
+- Each color flag triggers a separate line rendering
+- Different Garmin type codes: 0x2a (red), 0x2b (blue), etc.
+- `continue` allows the same way to match multiple rules
+- Result: Multiple line objects for ways with multiple trail colors
+
+**3. Visual Styling (TYP File)**
+
+`config/garmin/hiking.txt` → compiled to `hiking.typ`:
+```
+[_line]
+Type=0x2a
+DayCustomColor=#E63946
+Xpm="!!!!"  # Solid pattern
+```
+
+- Maps type codes (0x2a, 0x2b) to actual colors and patterns
+- Defines how each line renders on the device
+- Compiled to binary .typ format by mkgmap
+- Included in final gmapsupp.img file
+
+**Why Individual Flags Instead of Single Color Tag?**
+
+❌ **Wrong approach** (gets overwritten):
+```
+# Way belongs to both red and blue routes
+set route_color=red;   # First relation
+set route_color=blue;  # Second relation overwrites red!
+```
+
+✓ **Correct approach** (accumulates):
+```
+# Way belongs to both red and blue routes
+set hiking_red=yes;    # First relation
+set hiking_blue=yes;   # Second relation - both flags exist!
+```
+
+This allows the lines file to render the way twice (once red, once blue) with both patterns visible.
+
+**Why `continue` Statement?**
+
+Without `continue`, mkgmap stops processing after the first match:
+```
+highway=path & hiking_red=yes [0x2a resolution 22]  # Matches, renders red, STOPS
+highway=path & hiking_blue=yes [0x2b ...]           # Never reached!
+```
+
+With `continue`, mkgmap keeps processing:
+```
+highway=path & hiking_red=yes [0x2a resolution 22 continue]  # Matches, renders red, CONTINUES
+highway=path & hiking_blue=yes [0x2b resolution 22 continue] # Also matches, renders blue
+```
+
+Result: Same way rendered with both patterns, visually distinguishable on device.
 
 ### Multi-Region Maps
 
@@ -400,6 +636,13 @@ Install in BaseCamp:
 - [mkgmap Mailing List](https://www.mkgmap.org.uk/websvn/general.php)
 - [OSM Forum - Garmin](https://forum.openstreetmap.org/viewforum.php?id=14)
 - [r/Garmin](https://www.reddit.com/r/Garmin/)
+
+### Colored Trails Implementation
+- [Mkgmap Style Rules](https://wiki.openstreetmap.org/wiki/Mkgmap/help/style_rules) - Official style documentation
+- [Mkgmap Custom Styles](https://wiki.openstreetmap.org/wiki/Mkgmap/help/Custom_styles) - Continue statement and overlays
+- [OSMC Symbol Documentation](https://wiki.openstreetmap.org/wiki/Key:osmc:symbol) - Trail marker format
+- [User:Petrovsk Garmin Styles](https://wiki.openstreetmap.org/wiki/User:Petrovsk/My_Garmin_map_styles) - TYP examples
+- [Freizeitkarte Design](https://www.freizeitkarte-osm.de/garmin/en/design.html) - Hiking map approach
 
 ## Credits
 
