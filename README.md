@@ -2,6 +2,8 @@
 
 A complete Docker-based solution for generating and serving Hungarian hiking trail vector tiles using PMTiles, Tilemaker, and nginx.
 
+![Hiking Map Sample](./pmtiles-example.jpg)
+
 ## Features
 
 - **Zero Installation**: Uses Docker containers for all tools (no manual compilation needed)
