@@ -1,3 +1,0 @@
-- hiking routes seems to be missing from the pmtiles
-  - let's try to extract them into a separate pmtiles file for debugging
-  - a separate file might also be useful for users who only want hiking routes or who want a lighter map w/o hiking routes
