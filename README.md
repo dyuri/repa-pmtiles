@@ -98,6 +98,27 @@ Edit the configuration files before running `generate-tiles.sh`:
 - Modify trail filtering
 - Change attribute extraction
 
+### Restricting Tile Access by Referrer
+
+To prevent unauthorized sites from using your tiles, configure allowed referrer domains:
+
+1. Copy the example environment file:
+   ```bash
+   cp .env.example .env
+   ```
+
+2. Edit `.env` and set your allowed domains:
+   ```bash
+   ALLOWED_REFERRERS=localhost 127.0.0.1 yourdomain.com www.yourdomain.com
+   ```
+
+3. Restart the server:
+   ```bash
+   podman compose restart
+   ```
+
+The nginx server will only serve tiles to requests from these domains. This helps prevent bandwidth theft.
+
 ### Changing the Port
 
 Edit `docker-compose.yml` and change the port mapping:

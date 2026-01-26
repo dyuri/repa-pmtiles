@@ -32,3 +32,6 @@ Thumbs.db
 *.swo
 *~
 tmp/
+
+# Env
+.env
