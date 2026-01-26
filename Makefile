@@ -1,5 +1,6 @@
 .PHONY: help download fonts setup generate contours up down restart logs clean all
 .PHONY: garmin-image garmin garmin-clean all-maps
+.PHONY: dev-up dev-down dev-logs style-to-maputnik style-from-maputnik
 
 help:
 	@echo "Hungarian Hiking Maps - Docker Setup"
@@ -25,6 +26,13 @@ help:
 	@echo "  make garmin          - Generate Garmin IMG map file"
 	@echo "  make garmin-clean    - Clean up Garmin build artifacts"
 	@echo "  make all-maps        - Generate both PMTiles and Garmin maps"
+	@echo ""
+	@echo "Style editing (visual editor):"
+	@echo "  make dev-up              - Start dev environment (tile server + Maputnik)"
+	@echo "  make dev-down            - Stop dev environment"
+	@echo "  make dev-logs            - View dev environment logs"
+	@echo "  make style-to-maputnik   - Convert style.json for Maputnik editing"
+	@echo "  make style-from-maputnik - Convert edited style back to pmtiles:// format"
 	@echo ""
 
 download:
@@ -138,3 +146,37 @@ all: download fonts generate up
 	@echo ""
 	@echo "View your map at: http://localhost:8080"
 	@echo ""
+
+# Development environment with visual style editor
+dev-up:
+	@echo "Starting development environment..."
+	@echo ""
+	@echo "This will start:"
+	@echo "  - PMTiles tile server (port 8081)"
+	@echo "  - Maputnik style editor (port 8888)"
+	@echo "  - Nginx server (port 8080)"
+	@echo ""
+	@podman compose -f docker-compose.dev.yml up -d
+	@echo ""
+	@echo "Development environment started!"
+	@echo ""
+	@echo "Next steps:"
+	@echo "  1. Run: make style-to-maputnik"
+	@echo "  2. Open Maputnik: http://localhost:8888"
+	@echo "  3. Load style: http://localhost:8080/style-maputnik.json"
+	@echo "  4. Edit visually and export when done"
+	@echo "  5. Run: make style-from-maputnik"
+	@echo ""
+
+dev-down:
+	@echo "Stopping development environment..."
+	@podman compose -f docker-compose.dev.yml down
+
+dev-logs:
+	@podman compose -f docker-compose.dev.yml logs -f
+
+style-to-maputnik:
+	@./scripts/style-to-maputnik.sh
+
+style-from-maputnik:
+	@./scripts/style-from-maputnik.sh

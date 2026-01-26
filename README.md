@@ -138,16 +138,12 @@ url: 'pmtiles://http://localhost:YOUR_PORT/tiles/hungary-hiking.pmtiles'
 
 The map style is in `www/style.json` and can be edited:
 
-**Visual Editor (Recommended):**
-1. Open https://maputnik.github.io/editor/
-2. Load `http://localhost:8080/style.json`
-3. Edit visually (colors, widths, layers, etc.)
-4. Export and replace `www/style.json`
-
-**Manual Editing:**
+**Manual Editing (Recommended):**
 ```bash
 nano www/style.json  # Edit the JSON directly
 ```
+
+**Note about Visual Editors:** The style.json uses `pmtiles://` protocol URLs which require the PMTiles library. External editors like Maputnik won't be able to load the style directly. To use a visual editor, you would need to temporarily convert the source URLs to standard tile URLs or use MapLibre's built-in style editing capabilities.
 
 See `STYLE-EDITING.md` for a complete guide with examples and tips.
 

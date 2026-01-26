@@ -21,6 +21,11 @@ www/fonts/
 *.tmp
 *.log
 
+# Style editing temporary files
+www/style-maputnik.json
+www/style-edited.json
+www/style.json.backup
+
 # OS files
 .DS_Store
 Thumbs.db

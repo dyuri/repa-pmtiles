@@ -1,0 +1,45 @@
+# Development environment with tile server and Maputnik for style editing
+services:
+  # PMTiles tile server for visual style editing
+  pmtiles-server:
+    image: ghcr.io/protomaps/go-pmtiles:latest
+    container_name: pmtiles-tile-server
+    command: serve /tiles --cors=* --port=8081
+    ports:
+      - "8081:8081"
+    volumes:
+      - ./tiles:/tiles:ro
+    restart: unless-stopped
+    networks:
+      - pmtiles-network
+
+  # Maputnik visual style editor
+  maputnik:
+    image: maputnik/editor
+    container_name: maputnik-editor
+    ports:
+      - "8888:8888"
+    restart: unless-stopped
+    networks:
+      - pmtiles-network
+
+  # Regular nginx server (same as production)
+  nginx:
+    image: nginx:alpine
+    container_name: pmtiles-nginx
+    ports:
+      - "8080:80"
+    volumes:
+      - ./tiles:/usr/share/nginx/html/tiles:ro
+      - ./www:/usr/share/nginx/html:ro
+      - ./nginx/nginx.conf.template:/etc/nginx/templates/nginx.conf.template:ro
+      - ./docker/nginx/entrypoint.sh:/docker-entrypoint.d/40-envsubst-on-custom-templates.sh:ro
+    environment:
+      - ALLOWED_REFERRERS=${ALLOWED_REFERRERS:-localhost 127.0.0.1 example.com}
+    restart: unless-stopped
+    networks:
+      - pmtiles-network
+
+networks:
+  pmtiles-network:
+    driver: bridge

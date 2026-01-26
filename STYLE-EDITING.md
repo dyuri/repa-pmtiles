@@ -1,47 +1,18 @@
 # Style Editing Guide
 
-Your map style is now externalized to `www/style.json`, making it easy to edit visually with style editors.
+Your map style is in `www/style.json` and uses the `pmtiles://` protocol for serving tiles efficiently.
 
-## Option 1: Maputnik (Recommended)
+## Important Note about Visual Editors
 
-**Maputnik** is a free, open-source visual editor for MapLibre styles.
+**Maputnik and other visual style editors do NOT support `pmtiles://` URLs.** They expect standard tile server URLs (like `https://example.com/{z}/{x}/{y}.pbf`).
 
-### Online Editor (Easiest)
+Since this project serves PMTiles files directly via nginx (without a tile server), visual editors like Maputnik cannot load the map tiles for preview.
 
-1. **Open Maputnik**: https://maputnik.github.io/editor/
+**Options:**
+1. **Manual JSON editing** (recommended for this setup)
+2. **Set up a tile server** (adds complexity - see below)
 
-2. **Load your style**:
-   - Click "Open" in the top menu
-   - Select "Load from URL"
-   - Enter: `http://localhost:8080/style.json`
-   - Click "Open URL"
-
-3. **Edit visually**:
-   - Click on layers to edit colors, widths, opacity, etc.
-   - Add new layers with the "+" button
-   - Reorder layers by dragging
-   - Use the inspector (Cmd/Ctrl + I) to click features and see their properties
-
-4. **Save your changes**:
-   - Click "Export" at the top
-   - Click "Download" to save the JSON
-   - Replace `www/style.json` with your downloaded file
-   - Hard refresh your map (`Ctrl+Shift+R`)
-
-### Self-Hosted Maputnik (Better for Development)
-
-Run Maputnik locally for faster editing:
-
-```bash
-# Using Docker/Podman
-podman run -it --rm -p 8888:8888 maputnik/editor
-
-# Then open: http://localhost:8888
-```
-
-Load your style from `http://localhost:8080/style.json` and edit away!
-
-## Option 2: Manual JSON Editing
+## Option 1: Manual JSON Editing (Recommended)
 
 Edit `www/style.json` directly in your favorite text editor:
 
@@ -139,17 +110,68 @@ In `style.json`, find the `trails` layer and change `line-color`:
 }
 ```
 
-## Tips for Maputnik
+## Option 2: Using Maputnik (Visual Editor)
 
-1. **Use the inspector**: Click the inspector icon (or `Cmd/Ctrl+I`), then click on map features to see their properties and layers
+We've created an automated workflow for visual style editing with Maputnik!
 
-2. **Test zoom levels**: Use the zoom slider to see how layers appear at different zoom levels
+### Quick Start
 
-3. **Preview changes live**: Maputnik shows changes in real-time as you edit
+```bash
+# 1. Start development environment (tile server + Maputnik)
+make dev-up
 
-4. **Data properties**: In Maputnik, you can see all available properties for each feature (like trail type, surface, name, etc.)
+# 2. Convert your style to Maputnik-compatible format
+make style-to-maputnik
 
-5. **Color picker**: Click on any color value to open a visual color picker
+# 3. Open Maputnik in your browser
+# http://localhost:8888
+
+# 4. In Maputnik:
+#    - Click "Open" → "Load from URL"
+#    - Enter: http://localhost:8080/style-maputnik.json
+#    - Click "Open URL"
+
+# 5. Edit visually:
+#    - Change colors, line widths, opacity
+#    - Add/remove layers
+#    - Test at different zoom levels
+
+# 6. When done:
+#    - Click "Export" → "Download"
+#    - Save as www/style-edited.json
+
+# 7. Convert back to pmtiles:// format
+make style-from-maputnik
+
+# 8. Stop development environment
+make dev-down
+
+# 9. Refresh your browser to see changes!
+```
+
+### What This Does
+
+The development environment starts:
+- **PMTiles tile server** (port 8081) - Serves individual tiles from your PMTiles archive
+- **Maputnik editor** (port 8888) - Visual style editor with live preview
+- **Nginx server** (port 8080) - Your regular map viewer
+
+The conversion scripts automatically:
+- Convert `pmtiles://` URLs to standard tile URLs for Maputnik
+- Convert back to `pmtiles://` URLs for production use
+- Create backups of your style before changes
+
+## Tips for Manual Editing
+
+1. **Use a good JSON editor**: VS Code, nano with syntax highlighting, etc.
+
+2. **Test in browser**: After each change, hard refresh (`Ctrl+Shift+R`) to see results
+
+3. **Use browser DevTools**: Press `F12` and click on map features to see their properties in the console
+
+4. **Start simple**: Change one color at a time, test, then move to the next
+
+5. **Keep backups**: Always backup before major changes
 
 ## Debugging
 
@@ -194,14 +216,15 @@ Then reference them in Maputnik using expressions.
 - [MapLibre Expression Reference](https://maplibre.org/maplibre-style-spec/expressions/)
 - [Color Picker](https://coolors.co/) for finding nice color schemes
 
-## Quick Start
+## Quick Start for Manual Editing
 
-1. Open https://maputnik.github.io/editor/
-2. Load `http://localhost:8080/style.json`
-3. Click on "trails" layer
-4. Change colors, widths, patterns
-5. Export → Download
-6. Replace `www/style.json`
-7. Refresh browser!
+1. Open `www/style.json` in your editor
+2. Find the layer you want to change (search for layer `"id"`)
+3. Modify the `"paint"` or `"layout"` properties
+4. Save the file
+5. Hard refresh your browser (`Ctrl+Shift+R`)
+6. Repeat until satisfied!
+
+**Pro tip:** Make small changes and test frequently. If something breaks, check the browser console (`F12`) for errors.
 
 Happy styling! 🎨
