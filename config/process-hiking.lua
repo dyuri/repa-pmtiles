@@ -55,8 +55,14 @@ end
 function relation_scan_function()
     local type = Find("type")
     local route = Find("route")
-    if type == "route" and (route == "hiking" or route == "foot") then
-        Accept()
+    -- Only accept hiking and foot routes, explicitly reject others
+    if type == "route" then
+        if route == "hiking" or route == "foot" or route == "mtb" then
+            Accept()
+        else
+            -- Explicitly reject bus, bicycle, etc.
+            return
+        end
     end
 end
 
@@ -93,7 +99,7 @@ function relation_function()
     if t_text then Attribute("trail_text", t_text) end
     if t_text_color then Attribute("trail_text_color", t_text_color) end
 
-    MinZoom(10)
+    MinZoom(11)
 end
 
 -- Process nodes (points of interest)
@@ -143,9 +149,9 @@ function node_function()
         if place == "city" then
             MinZoom(6)
         elseif place == "town" then
-            MinZoom(8)
+            MinZoom(9)
         else
-            MinZoom(10)
+            MinZoom(12)
         end
     end
 end
@@ -190,7 +196,7 @@ function way_function()
             Attribute("surface", surface)
         end
 
-        MinZoom(11) -- Physical paths shown from zoom 11
+        MinZoom(13) -- Physical paths shown from zoom 12
 
     -- Roads (for context)
     elseif highway == "motorway" or highway == "trunk" or highway == "primary" or
@@ -219,12 +225,12 @@ function way_function()
         if highway == "motorway" or highway == "trunk" then
             MinZoom(8)
         elseif highway == "primary" then
-            MinZoom(9)
-        elseif highway == "secondary" or highway == "tertiary" then
             MinZoom(10)
+        elseif highway == "secondary" or highway == "tertiary" then
+            MinZoom(12)
         else
-            -- Residential and smaller roads appear from zoom 11
-            MinZoom(11)
+            -- Residential and smaller roads appear from zoom 12
+            MinZoom(13)
         end
     end
 
@@ -241,7 +247,7 @@ function way_function()
         if waterway == "river" then
             MinZoom(8)
         else
-            MinZoom(10)
+            MinZoom(9)
         end
     end
 
@@ -249,14 +255,14 @@ function way_function()
     if natural == "water" or landuse == "reservoir" then
         Layer("water", true)
         Attribute("type", natural or landuse)
-        MinZoom(9)
+        MinZoom(8)
     end
 
     -- Forests (polygons)
     if natural == "wood" or landuse == "forest" then
         Layer("landuse", true)
         Attribute("type", "forest")
-        MinZoom(10)
+        MinZoom(8)
     end
 
     -- Grass/meadow (polygons)
@@ -264,14 +270,14 @@ function way_function()
        natural == "grassland" or leisure == "park" then
         Layer("landuse", true)
         Attribute("type", landuse or natural or leisure)
-        MinZoom(11)
+        MinZoom(9)
     end
 
     -- Farmland (polygons)
     if landuse == "farmland" or landuse == "orchard" or landuse == "vineyard" then
         Layer("landuse", true)
         Attribute("type", landuse)
-        MinZoom(11)
+        MinZoom(9)
     end
 
     -- Buildings (polygons)

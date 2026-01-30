@@ -1,8 +1,7 @@
 {
   "version": 8,
-  "id": "hungarian-hiking-dark",
   "name": "Hungarian Hiking - Dark",
-  "glyphs": "http://localhost:8080/fonts/{fontstack}/{range}.pbf",
+  "metadata": {"maputnik:renderer": "mbgljs"},
   "sources": {
     "hungary-hiking": {
       "type": "vector",
@@ -15,14 +14,13 @@
       "attribution": "SRTM"
     }
   },
+  "glyphs": "http://localhost:8080/fonts/{fontstack}/{range}.pbf",
   "layers": [
     {
       "id": "background",
       "type": "background",
       "minzoom": 0,
-      "layout": {
-        "visibility": "visible"
-      },
+      "layout": {"visibility": "visible"},
       "paint": {
         "background-color": [
           "interpolate",
@@ -41,14 +39,9 @@
       "source": "hungary-hiking",
       "source-layer": "landuse",
       "minzoom": 9,
-      "layout": {
-        "visibility": "visible"
-      },
-      "paint": {
-        "fill-color": "hsl(91, 38%, 14%)",
-        "fill-opacity": 1
-      },
-      "filter": ["==", "type", "forest"]
+      "filter": ["==", "type", "forest"],
+      "layout": {"visibility": "visible"},
+      "paint": {"fill-color": "hsl(91, 38%, 14%)", "fill-opacity": 1}
     },
     {
       "id": "grass",
@@ -56,13 +49,9 @@
       "source": "hungary-hiking",
       "source-layer": "landuse",
       "minzoom": 11,
-      "layout": {
-        "visibility": "visible"
-      },
-      "paint": {
-        "fill-color": "hsla(90, 35%, 9%, 0.3)"
-      },
-      "filter": ["in", "type", "grass", "meadow", "park"]
+      "filter": ["in", "type", "grass", "meadow", "park"],
+      "layout": {"visibility": "visible"},
+      "paint": {"fill-color": "hsla(90, 35%, 9%, 0.3)"}
     },
     {
       "id": "farmland",
@@ -70,22 +59,16 @@
       "source": "hungary-hiking",
       "source-layer": "landuse",
       "minzoom": 11,
-      "layout": {
-        "visibility": "visible"
-      },
-      "paint": {
-        "fill-color": "hsla(58, 55%, 13%, 0.4)"
-      },
-      "filter": ["in", "type", "farmland", "orchard", "vineyard"]
+      "filter": ["in", "type", "farmland", "orchard", "vineyard"],
+      "layout": {"visibility": "visible"},
+      "paint": {"fill-color": "hsla(58, 55%, 13%, 0.4)"}
     },
     {
       "id": "water",
       "type": "fill",
       "source": "hungary-hiking",
       "source-layer": "water",
-      "layout": {
-        "visibility": "visible"
-      },
+      "layout": {"visibility": "visible"},
       "paint": {
         "fill-color": [
           "interpolate",
@@ -104,10 +87,7 @@
       "source": "hungary-hiking",
       "source-layer": "waterway",
       "minzoom": 8,
-      "layout": {
-        "line-cap": "round",
-        "line-join": "round"
-      },
+      "layout": {"line-cap": "round", "line-join": "round"},
       "paint": {
         "line-color": "hsl(210, 61%, 22%)",
         "line-width": [
@@ -129,22 +109,11 @@
       "source": "hungary-hiking",
       "source-layer": "boundaries",
       "minzoom": 3,
-      "layout": {
-        "line-cap": "round",
-        "line-join": "round"
-      },
+      "layout": {"line-cap": "round", "line-join": "round"},
       "paint": {
         "line-color": "hsl(0, 0%, 32%)",
         "line-dasharray": [3, 2],
-        "line-width": [
-          "interpolate",
-          ["linear"],
-          ["zoom"],
-          3,
-          0.5,
-          10,
-          1.5
-        ],
+        "line-width": ["interpolate", ["linear"], ["zoom"], 3, 0.5, 10, 1.5],
         "line-opacity": 0.6
       }
     },
@@ -154,10 +123,12 @@
       "source": "contours",
       "source-layer": "contour",
       "minzoom": 11,
-      "layout": {
-        "line-cap": "square",
-        "visibility": "visible"
-      },
+      "filter": [
+        "all",
+        ["!=", ["get", "elevation"], 0],
+        ["!=", ["%", ["get", "elevation"], 100], 0]
+      ],
+      "layout": {"line-cap": "square", "visibility": "visible"},
       "paint": {
         "line-color": "hsl(36, 24%, 43%)",
         "line-width": 0.5,
@@ -172,12 +143,7 @@
           15,
           0.6
         ]
-      },
-      "filter": [
-        "all",
-        ["!=", ["get", "elevation"], 0],
-        ["!=", ["%", ["get", "elevation"], 100], 0]
-      ]
+      }
     },
     {
       "id": "contour-index",
@@ -185,9 +151,12 @@
       "source": "contours",
       "source-layer": "contour",
       "minzoom": 10,
-      "layout": {
-        "visibility": "visible"
-      },
+      "filter": [
+        "all",
+        ["!=", ["get", "elevation"], 0],
+        ["==", ["%", ["get", "elevation"], 100], 0]
+      ],
+      "layout": {"visibility": "visible"},
       "paint": {
         "line-color": "hsl(36, 24%, 35%)",
         "line-width": [
@@ -212,12 +181,7 @@
           15,
           0.8
         ]
-      },
-      "filter": [
-        "all",
-        ["!=", ["get", "elevation"], 0],
-        ["==", ["%", ["get", "elevation"], 100], 0]
-      ]
+      }
     },
     {
       "id": "buildings",
@@ -225,9 +189,7 @@
       "source": "hungary-hiking",
       "source-layer": "buildings",
       "minzoom": 13,
-      "layout": {
-        "visibility": "visible"
-      },
+      "layout": {"visibility": "visible"},
       "paint": {
         "fill-antialias": true,
         "fill-color": [
@@ -260,13 +222,7 @@
           ["linear"],
           ["zoom"],
           5,
-          [
-            "match",
-            ["get", "type"],
-            "motorway",
-            1.5,
-            0
-          ],
+          ["match", ["get", "type"], "motorway", 1.5, 0],
           9,
           [
             "match",
@@ -350,15 +306,15 @@
           "match",
           ["get", "type"],
           "motorway",
-          "hsl(26, 87%, 47%)",
+          "hsl(26, 87%, 5%)",
           "trunk",
-          "hsl(30, 84%, 53%)",
+          "hsl(30, 84%, 5%)",
           "primary",
-          "hsl(46, 77%, 56%)",
+          "hsl(46, 77%, 5%)",
           "secondary",
-          "hsl(60, 60%, 55%)",
+          "hsl(60, 60%, 5%)",
           "tertiary",
-          "hsl(0, 0%, 42%)",
+          "hsl(0, 0%, 4%)",
           ["residential", "unclassified", "living_street"],
           "hsl(0, 0%, 38%)",
           ["service", "road", "minor"],
@@ -370,13 +326,7 @@
           ["linear"],
           ["zoom"],
           5,
-          [
-            "match",
-            ["get", "type"],
-            "motorway",
-            0.5,
-            0
-          ],
+          ["match", ["get", "type"], "motorway", 0.5, 0],
           9,
           [
             "match",
@@ -464,15 +414,7 @@
       },
       "paint": {
         "line-color": "hsl(0, 0%, 40%)",
-        "line-width": [
-          "interpolate",
-          ["linear"],
-          ["zoom"],
-          12,
-          1,
-          16,
-          3
-        ],
+        "line-width": ["interpolate", ["linear"], ["zoom"], 12, 1, 16, 3],
         "line-dasharray": [2, 1]
       }
     },
@@ -482,7 +424,11 @@
       "source": "hungary-hiking",
       "source-layer": "trails",
       "minzoom": 10,
-      "filter": ["==", "class", "route"],
+      "filter": [
+        "all",
+        ["==", "class", "route"],
+        ["in", "route", "hiking", "foot", "mtb"]
+      ],
       "layout": {
         "line-cap": "round",
         "line-join": "round",
@@ -490,15 +436,7 @@
       },
       "paint": {
         "line-color": "hsla(0, 0%, 100%, 0.5)",
-        "line-width": [
-          "interpolate",
-          ["linear"],
-          ["zoom"],
-          10,
-          3,
-          14,
-          5
-        ],
+        "line-width": ["interpolate", ["linear"], ["zoom"], 10, 2, 14, 4],
         "line-offset": [
           "interpolate",
           ["linear"],
@@ -509,14 +447,22 @@
           [
             "match",
             ["get", "trail_color"],
-            "orange", 1,
-            "purple", 3,
-            "black", 5,
-            "brown", 7,
-            "blue", -1,
-            "green", -3,
-            "yellow", -5,
-            "red", -7,
+            "orange",
+            0.5,
+            "purple",
+            1.5,
+            "black",
+            2.5,
+            "brown",
+            3.5,
+            "blue",
+            -0.5,
+            "green",
+            -1.5,
+            "yellow",
+            -2.5,
+            "red",
+            -3.5,
             0
           ]
         ]
@@ -528,7 +474,11 @@
       "source": "hungary-hiking",
       "source-layer": "trails",
       "minzoom": 6,
-      "filter": ["==", "class", "route"],
+      "filter": [
+        "all",
+        ["==", "class", "route"],
+        ["in", "route", "hiking", "foot", "mtb"]
+      ],
       "layout": {
         "line-cap": "round",
         "line-join": "round",
@@ -538,25 +488,25 @@
         "line-color": [
           "match",
           ["get", "trail_color"],
-          "red", "hsl(0, 85%, 55%)",
-          "blue", "hsl(210, 85%, 55%)",
-          "green", "hsl(120, 65%, 45%)",
-          "yellow", "hsl(50, 95%, 45%)",
-          "orange", "hsl(35, 85%, 50%)",
-          "purple", "hsl(280, 75%, 50%)",
-          "black", "hsl(0, 0%, 20%)",
-          "brown", "hsl(30, 60%, 40%)",
+          "red",
+          "hsl(0, 85%, 55%)",
+          "blue",
+          "hsl(210, 85%, 55%)",
+          "green",
+          "hsl(120, 65%, 45%)",
+          "yellow",
+          "hsl(50, 95%, 45%)",
+          "orange",
+          "hsl(35, 85%, 50%)",
+          "purple",
+          "hsl(280, 75%, 50%)",
+          "black",
+          "hsl(0, 0%, 20%)",
+          "brown",
+          "hsl(30, 60%, 40%)",
           "hsl(0, 0%, 50%)"
         ],
-        "line-width": [
-          "interpolate",
-          ["linear"],
-          ["zoom"],
-          10,
-          2,
-          14,
-          3
-        ],
+        "line-width": ["interpolate", ["linear"], ["zoom"], 10, 1, 14, 2],
         "line-offset": [
           "interpolate",
           ["linear"],
@@ -567,14 +517,22 @@
           [
             "match",
             ["get", "trail_color"],
-            "orange", 1,
-            "purple", 3,
-            "black", 5,
-            "brown", 7,
-            "blue", -1,
-            "green", -3,
-            "yellow", -5,
-            "red", -7,
+            "orange",
+            0.5,
+            "purple",
+            1.5,
+            "black",
+            2.5,
+            "brown",
+            3.5,
+            "blue",
+            -0.5,
+            "green",
+            -1.5,
+            "yellow",
+            -2.5,
+            "red",
+            -3.5,
             0
           ]
         ]
@@ -646,52 +604,32 @@
       "source": "contours",
       "source-layer": "contour",
       "minzoom": 13,
+      "filter": ["==", ["%", ["get", "elevation"], 100], 0],
       "layout": {
         "symbol-avoid-edges": true,
         "symbol-placement": "line",
         "text-allow-overlap": false,
         "text-field": "{elevation}m",
         "text-font": ["Noto Sans Regular"],
-        "text-size": [
-          "interpolate",
-          ["linear"],
-          ["zoom"],
-          13,
-          8,
-          16,
-          10
-        ],
+        "text-size": ["interpolate", ["linear"], ["zoom"], 13, 8, 16, 10],
         "text-rotation-alignment": "map"
       },
       "paint": {
         "text-color": "hsl(38, 50%, 60%)",
         "text-halo-color": "hsl(120, 4%, 18%)",
         "text-halo-width": 1.5,
-        "text-opacity": [
-          "interpolate",
-          ["linear"],
-          ["zoom"],
-          13,
-          0.6,
-          15,
-          0.9
-        ]
-      },
-      "filter": ["==", ["%", ["get", "elevation"], 100], 0]
+        "text-opacity": ["interpolate", ["linear"], ["zoom"], 13, 0.6, 15, 0.9]
+      }
     },
     {
       "id": "road-labels",
       "type": "symbol",
       "source": "hungary-hiking",
       "source-layer": "roads",
-      "filter": ["has", "name"],
       "minzoom": 12,
+      "filter": ["has", "name"],
       "layout": {
-        "text-field": [
-          "coalesce",
-          ["get", "name"],
-          ["get", "ref"]
-        ],
+        "text-field": ["coalesce", ["get", "name"], ["get", "ref"]],
         "text-font": ["Noto Sans Regular"],
         "text-size": [
           "interpolate",
@@ -733,15 +671,7 @@
         ],
         "text-halo-color": "hsl(0, 0%, 10%)",
         "text-halo-width": 2,
-        "text-opacity": [
-          "interpolate",
-          ["linear"],
-          ["zoom"],
-          12,
-          0.7,
-          14,
-          1
-        ]
+        "text-opacity": ["interpolate", ["linear"], ["zoom"], 12, 0.7, 14, 1]
       }
     },
     {
@@ -749,8 +679,8 @@
       "type": "symbol",
       "source": "hungary-hiking",
       "source-layer": "waterway",
-      "filter": ["has", "name"],
       "minzoom": 13,
+      "filter": ["has", "name"],
       "layout": {
         "text-field": ["get", "name"],
         "text-font": ["Noto Sans Regular"],
@@ -769,20 +699,12 @@
       "type": "symbol",
       "source": "hungary-hiking",
       "source-layer": "pois",
-      "filter": ["has", "name"],
       "minzoom": 13,
+      "filter": ["has", "name"],
       "layout": {
         "text-field": ["get", "name"],
         "text-font": ["Noto Sans Regular"],
-        "text-size": [
-          "interpolate",
-          ["linear"],
-          ["zoom"],
-          13,
-          9,
-          16,
-          11
-        ],
+        "text-size": ["interpolate", ["linear"], ["zoom"], 13, 9, 16, 11],
         "text-anchor": "top",
         "text-offset": [0, 1]
       },
@@ -797,8 +719,8 @@
       "type": "symbol",
       "source": "hungary-hiking",
       "source-layer": "trails",
-      "filter": ["any", ["has", "trail_symbol"], ["has", "trail_text"]],
       "minzoom": 12,
+      "filter": ["any", ["has", "trail_symbol"], ["has", "trail_text"]],
       "layout": {
         "text-field": [
           "case",
@@ -807,34 +729,43 @@
           [
             "match",
             ["get", "trail_symbol"],
-            "bar", "▬",
-            "stripe", "▬",
-            "cross", "+",
-            "x", "✕",
-            "circle", "●",
-            "dot", "●",
-            "rectangle", "▮",
-            "turned_T", "⊥",
-            "L", "⌐",
-            "corner", "⌐",
-            "backslash", "\\",
-            "slash", "/",
-            "triangle", "▲",
-            "pointer", "▶",
-            "diamond", "◆",
+            "bar",
+            "▬",
+            "stripe",
+            "▬",
+            "cross",
+            "+",
+            "x",
+            "✕",
+            "circle",
+            "o",
+            "dot",
+            "●",
+            "rectangle",
+            "▮",
+            "turned_T",
+            "⊥",
+            "L",
+            "L",
+            "corner",
+            "⌐",
+            "backslash",
+            "\\",
+            "slash",
+            "/",
+            "triangle",
+            "▲",
+            "pointer",
+            "▶",
+            "diamond",
+            "◆",
+            "bicycle",
+            "B",
             "●"
           ]
         ],
         "text-font": ["Noto Sans Bold"],
-        "text-size": [
-          "interpolate",
-          ["linear"],
-          ["zoom"],
-          12,
-          12,
-          16,
-          18
-        ],
+        "text-size": ["interpolate", ["linear"], ["zoom"], 12, 12, 16, 18],
         "symbol-placement": "line",
         "symbol-spacing": [
           "interpolate",
@@ -856,27 +787,42 @@
           [
             "match",
             ["get", "trail_text_color"],
-            "red", "hsl(0, 85%, 55%)",
-            "blue", "hsl(210, 85%, 55%)",
-            "green", "hsl(120, 65%, 45%)",
-            "yellow", "hsl(50, 95%, 60%)",
-            "orange", "hsl(35, 85%, 50%)",
-            "purple", "hsl(280, 75%, 50%)",
-            "black", "hsl(0, 0%, 20%)",
-            "brown", "hsl(30, 60%, 40%)",
-            "white", "hsl(0, 0%, 95%)",
+            "red",
+            "hsl(0, 85%, 55%)",
+            "blue",
+            "hsl(210, 85%, 55%)",
+            "green",
+            "hsl(120, 65%, 45%)",
+            "yellow",
+            "hsl(50, 95%, 60%)",
+            "orange",
+            "hsl(35, 85%, 50%)",
+            "purple",
+            "hsl(280, 75%, 50%)",
+            "black",
+            "hsl(0, 0%, 20%)",
+            "brown",
+            "hsl(30, 60%, 40%)",
+            "white",
+            "hsl(0, 0%, 95%)",
             "hsl(25, 35%, 35%)"
           ],
           ["has", "trail_color"],
           [
             "match",
             ["get", "trail_color"],
-            "red", "hsl(0, 85%, 55%)",
-            "blue", "hsl(210, 85%, 55%)",
-            "green", "hsl(120, 65%, 45%)",
-            "yellow", "hsl(50, 95%, 60%)",
-            "orange", "hsl(35, 85%, 50%)",
-            "purple", "hsl(280, 75%, 50%)",
+            "red",
+            "hsl(0, 85%, 55%)",
+            "blue",
+            "hsl(210, 85%, 55%)",
+            "green",
+            "hsl(120, 65%, 45%)",
+            "yellow",
+            "hsl(50, 95%, 60%)",
+            "orange",
+            "hsl(35, 85%, 50%)",
+            "purple",
+            "hsl(280, 75%, 50%)",
             "hsl(25, 35%, 35%)"
           ],
           "hsl(25, 35%, 35%)"
@@ -891,25 +837,22 @@
       "type": "symbol",
       "source": "hungary-hiking",
       "source-layer": "trails",
-      "filter": ["has", "name"],
       "minzoom": 13,
+      "filter": [
+        "all",
+        ["has", "name"],
+        ["==", "class", "route"],
+        ["in", "route", "hiking", "foot", "mtb"]
+      ],
       "layout": {
         "text-field": ["get", "name"],
         "text-font": ["Noto Sans Regular"],
-        "text-size": [
-          "interpolate",
-          ["linear"],
-          ["zoom"],
-          13,
-          10,
-          16,
-          12
-        ],
+        "text-size": ["interpolate", ["linear"], ["zoom"], 13, 10, 16, 12],
         "symbol-placement": "line",
         "text-rotation-alignment": "map"
       },
       "paint": {
-        "text-color": "hsl(15, 85%, 70%)",
+        "text-color": "hsl(70, 85%, 80%)",
         "text-halo-color": "hsl(0, 0%, 10%)",
         "text-halo-width": 2
       }
@@ -933,53 +876,20 @@
           ["linear"],
           ["zoom"],
           6,
-          [
-            "match",
-            ["get", "type"],
-            "city",
-            12,
-            10
-          ],
+          ["match", ["get", "type"], "city", 12, 10],
           12,
-          [
-            "match",
-            ["get", "type"],
-            "city",
-            18,
-            "town",
-            15,
-            "village",
-            12,
-            10
-          ],
+          ["match", ["get", "type"], "city", 18, "town", 15, "village", 12, 10],
           16,
-          [
-            "match",
-            ["get", "type"],
-            "city",
-            22,
-            "town",
-            18,
-            "village",
-            14,
-            12
-          ]
+          ["match", ["get", "type"], "city", 22, "town", 18, "village", 14, 12]
         ]
       },
       "paint": {
         "text-color": "hsl(0, 0%, 90%)",
         "text-halo-color": "hsl(0, 0%, 10%)",
         "text-halo-width": 2.5,
-        "text-opacity": [
-          "interpolate",
-          ["linear"],
-          ["zoom"],
-          6,
-          0.8,
-          10,
-          1
-        ]
+        "text-opacity": ["interpolate", ["linear"], ["zoom"], 6, 0.8, 10, 1]
       }
     }
-  ]
+  ],
+  "id": "hungarian-hiking-dark"
 }

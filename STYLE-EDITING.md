@@ -2,6 +2,100 @@
 
 Your map style is in `www/style.json` and uses the `pmtiles://` protocol for serving tiles efficiently.
 
+## Understanding the Three Layers of Control
+
+Before editing styles, it's important to understand how zoom levels and features are controlled across three different files:
+
+### 1. `config/process-hiking.lua` (Data Generation)
+- **Purpose**: Controls what data gets **written into** the PMTiles file
+- **MinZoom(X)**: Features only appear in tiles at zoom X and above
+- **When to change**: Rarely - only when adding new feature types or changing data strategy
+- **Impact**: Requires regenerating tiles (slow, 10-30 minutes)
+- **Best practice**: Set MinZoom values **generously** (lower than you think you need)
+
+Example:
+```lua
+if landuse == "forest" then
+    MinZoom(7)  -- Include forests in tiles from zoom 7+
+                -- Even if you plan to display them from zoom 9
+end
+```
+
+### 2. `config/config-hiking.json` (Layer Configuration)
+- **Purpose**: Layer-level zoom limits for tile generation
+- **minzoom/maxzoom**: Per-layer zoom range for data generation
+- **When to change**: Rarely - set conservatively once
+- **Impact**: Requires regenerating tiles
+
+Example:
+```json
+{
+  "layers": {
+    "landuse": {
+      "minzoom": 7,
+      "maxzoom": 14
+    }
+  }
+}
+```
+
+### 3. `www/style.json` (Visual Display)
+- **Purpose**: Controls how data is **displayed** in the browser
+- **minzoom/maxzoom**: Client-side visibility control
+- **paint**: Colors, widths, opacity, patterns
+- **layout**: Labels, symbols, visibility
+- **When to change**: Frequently - this is your main editing target
+- **Impact**: Instant - just refresh browser (Ctrl+Shift+R)
+
+Example:
+```json
+{
+  "id": "forest",
+  "type": "fill",
+  "minzoom": 9,
+  "paint": {
+    "fill-color": "#228B22",
+    "fill-opacity": 0.6
+  }
+}
+```
+
+### The Optimal Workflow
+
+**Phase 1: Initial Data Setup** (do once or rarely)
+```bash
+# Edit process-hiking.lua with generous MinZoom values
+vim config/process-hiking.lua
+
+# Regenerate tiles
+make generate
+```
+
+**Phase 2: Visual Iteration** (do frequently, no regeneration needed!)
+```bash
+# Start dev environment
+make dev-up
+make style-to-maputnik
+
+# Edit in Maputnik or manually edit style.json
+# Change colors, zoom levels, widths, opacity, etc.
+
+# Convert back if using Maputnik
+make style-from-maputnik
+
+# Just refresh browser - changes are instant!
+```
+
+### Why This Matters
+
+If you set `MinZoom(10)` in Lua but later want to show features at zoom 8, you **must regenerate tiles** (slow).
+
+But if you set `MinZoom(7)` in Lua and `minzoom: 10` in style.json, you can later change style.json to `minzoom: 8` **instantly** by just refreshing your browser.
+
+**Golden Rule**: Set Lua MinZoom values generously (lower zoom = earlier visibility). Do all fine-tuning in style.json where changes are instant.
+
+---
+
 ## Important Note about Visual Editors
 
 **Maputnik and other visual style editors do NOT support `pmtiles://` URLs.** They expect standard tile server URLs (like `https://example.com/{z}/{x}/{y}.pbf`).
