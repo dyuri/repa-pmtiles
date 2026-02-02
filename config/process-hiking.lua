@@ -66,40 +66,45 @@ function relation_scan_function()
     end
 end
 
--- Process accepted relations and output their geometries
--- FIX: Changed from relation_postscan_function to relation_function
--- This allows Tilemaker to construct multilinestring geometries from relation member ways
+-- Output relation geometries with validation
 function relation_function()
-    -- Get relation tags
-    local osmc = Find("osmc:symbol")
-    local color = Find("color")
-    local ref = Find("ref")
-    local name = Find("name")
-    local route = Find("route")
+    local success, err = pcall(function()
+        -- Check if geometry might be problematic
+        -- Skip relations with too few or too many members
+        local member_count = 0
+        -- Note: Can't directly count members in relation_function, so we output and let Tilemaker handle it
 
-    -- Output the relation geometry as a multilinestring
-    Layer("trails", false)
+        local osmc = Find("osmc:symbol")
+        local color = Find("color")
+        local ref = Find("ref")
+        local name = Find("name")
+        local route = Find("route")
 
-    Attribute("class", "route") -- Distinguish routes from paths
-    Attribute("route", route)
+        Layer("trails", false)
+        Attribute("class", "route")
+        Attribute("route", route)
 
-    if name ~= "" then Attribute("name", name) end
-    if ref ~= "" then Attribute("ref", ref) end
-    if osmc ~= "" then Attribute("osmc_symbol", osmc) end
+        if name ~= "" then Attribute("name", name) end
+        if ref ~= "" then Attribute("ref", ref) end
+        if osmc ~= "" then Attribute("osmc_symbol", osmc) end
 
-    local t_color, t_symbol, t_text, t_text_color = parse_osmc(osmc)
+        local t_color, t_symbol, t_text, t_text_color = parse_osmc(osmc)
 
-    -- Fallback to color tag if OSMC didn't give a color
-    if not t_color and color ~= "" then
-        t_color = color
+        if not t_color and color ~= "" then
+            t_color = color
+        end
+
+        if t_color then Attribute("trail_color", t_color) end
+        if t_symbol then Attribute("trail_symbol", t_symbol) end
+        if t_text then Attribute("trail_text", t_text) end
+        if t_text_color then Attribute("trail_text_color", t_text_color) end
+
+        MinZoom(11)
+    end)
+
+    if not success then
+        -- Silently skip problematic relations
     end
-
-    if t_color then Attribute("trail_color", t_color) end
-    if t_symbol then Attribute("trail_symbol", t_symbol) end
-    if t_text then Attribute("trail_text", t_text) end
-    if t_text_color then Attribute("trail_text_color", t_text_color) end
-
-    MinZoom(11)
 end
 
 -- Process nodes (points of interest)

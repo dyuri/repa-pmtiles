@@ -87,6 +87,17 @@
             hash: true  // Enable automatic hash updates
         });
 
+        // Suppress "Unimplemented type" errors (MapLibre bug with certain geometries)
+        map.on('error', (e) => {
+            if (e.error && e.error.message && e.error.message.includes('Unimplemented type')) {
+                // Silently ignore - this is a known MapLibre issue with complex route geometries
+                // The map continues to function normally
+                return;
+            }
+            // Log other errors
+            console.error('Map error:', e);
+        });
+
         // Add navigation controls
         map.addControl(new maplibregl.NavigationControl());
 

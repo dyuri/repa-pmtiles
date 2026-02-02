@@ -20,9 +20,12 @@ echo "Downloading pre-built font glyphs from OpenFreeMap..."
 echo "This includes Noto Sans Regular and Bold"
 echo ""
 
-# Download pre-built PBF fonts from OpenFreeMap
-# These are the exact same format MapLibre needs
-FONT_BASE_URL="https://tiles.openfreemap.org/fonts"
+# Download pre-built PBF fonts
+# We use multiple sources and keep the larger file to ensure maximum character coverage
+SOURCES=(
+    "https://tiles.openfreemap.org/fonts"
+    "https://protomaps.github.io/basemaps-assets/fonts"
+)
 
 # Font stacks we need
 FONTS=("Noto Sans Regular" "Noto Sans Bold")
@@ -33,14 +36,24 @@ for font in "${FONTS[@]}"; do
     mkdir -p "$font_dir"
 
     # Download common Unicode ranges (0-65535, step 256)
-    # We'll download the most common ranges to save space
     # Extended to 10240 to include geometric shapes used for trail symbols (▲, ●, ■, etc.)
     for start in {0..9984..256}; do
         end=$((start + 255))
-        url_font=$(echo "$font" | sed 's/ /%20/g')
-
-        wget -q -O "$font_dir/${start}-${end}.pbf" \
-            "$FONT_BASE_URL/${url_font}/${start}-${end}.pbf" 2>/dev/null || true
+        filename="${start}-${end}.pbf"
+        
+        # Try each source and keep the largest file
+        for source in "${SOURCES[@]}"; do
+            url_font=$(echo "$font" | sed 's/ /%20/g')
+            temp_file="/tmp/${font}_${filename}"
+            
+            if wget -q -O "$temp_file" "$source/$url_font/$filename" 2>/dev/null; then
+                if [ ! -f "$font_dir/$filename" ] || [ $(stat -c%s "$temp_file") -gt $(stat -c%s "$font_dir/$filename") ]; then
+                    mv "$temp_file" "$font_dir/$filename"
+                else
+                    rm "$temp_file"
+                fi
+            fi
+        done
     done
 
     # Remove any empty/failed downloads
