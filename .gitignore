@@ -20,6 +20,7 @@ www/fonts/
 # Temporary files
 *.tmp
 *.log
+debug
 
 # Style editing temporary files
 www/style-maputnik.json

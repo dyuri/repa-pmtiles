@@ -14,7 +14,8 @@
       "Bash(sqlite3:*)",
       "Bash(./scripts/generate-tiles.sh:*)",
       "Bash(tee:*)",
-      "WebFetch(domain:www.mkgmap.org.uk)"
+      "WebFetch(domain:www.mkgmap.org.uk)",
+      "Bash(./scripts/debug-tile.sh:*)"
     ]
   }
 }
