@@ -15,7 +15,9 @@
       "Bash(./scripts/generate-tiles.sh:*)",
       "Bash(tee:*)",
       "WebFetch(domain:www.mkgmap.org.uk)",
-      "Bash(./scripts/debug-tile.sh:*)"
+      "Bash(./scripts/debug-tile.sh:*)",
+      "Bash(git -C /home/dyuri/egyeb/prog/vibe/pmtiles-server show :scripts/dem_to_terrain_rgb.py)",
+      "Bash(git -C /home/dyuri/egyeb/prog/vibe/pmtiles-server diff --cached -- scripts/dem_to_terrain_rgb.py)"
     ]
   }
 }

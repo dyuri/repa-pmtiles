@@ -12,6 +12,13 @@
       "type": "vector",
       "url": "pmtiles://http://localhost:8080/tiles/hungary-contours.pmtiles",
       "attribution": "SRTM"
+    },
+    "terrain-rgb": {
+      "type": "raster-dem",
+      "url": "pmtiles://http://localhost:8080/tiles/hungary-terrain-rgb.pmtiles",
+      "encoding": "mapbox",
+      "tileSize": 256,
+      "attribution": "SRTM via CGIAR"
     }
   },
   "glyphs": "http://localhost:8080/fonts/{fontstack}/{range}.pbf",
@@ -34,6 +41,20 @@
       }
     },
     {
+      "id": "hillshade",
+      "type": "hillshade",
+      "source": "terrain-rgb",
+      "layout": {"visibility": "visible"},
+      "paint": {
+        "hillshade-illumination-direction": 335,
+        "hillshade-illumination-anchor": "map",
+        "hillshade-exaggeration": 0.8,
+        "hillshade-shadow-color": "hsla(0, 0%, 0%, 0.8)",
+        "hillshade-highlight-color": "hsla(0, 0%, 100%, 0.4)",
+        "hillshade-accent-color": "hsla(0, 0%, 0%, 0.6)"
+      }
+    },
+    {
       "id": "forest",
       "type": "fill",
       "source": "hungary-hiking",
@@ -41,7 +62,7 @@
       "minzoom": 9,
       "filter": ["==", "type", "forest"],
       "layout": {"visibility": "visible"},
-      "paint": {"fill-color": "hsl(91, 38%, 14%)", "fill-opacity": 1}
+      "paint": {"fill-color": "hsl(91, 38%, 14%)", "fill-opacity": 0.5}
     },
     {
       "id": "grass",

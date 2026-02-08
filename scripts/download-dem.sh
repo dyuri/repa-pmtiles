@@ -2,6 +2,8 @@
 set -e
 
 # Script to download Digital Elevation Model (DEM) data for Hungary
+# Uses Copernicus DEM GLO-30 (TanDEM-X based, 30m resolution)
+# Source: AWS Open Data public bucket - no authentication required
 # Usage: ./scripts/download-dem.sh
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -9,129 +11,110 @@ PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
 DEM_DIR="$PROJECT_DIR/data/dem"
 
 echo "======================================"
-echo "Downloading DEM Data for Hungary"
+echo "Downloading Copernicus DEM for Hungary"
 echo "======================================"
 echo ""
+echo "Source: Copernicus DEM GLO-30 (30m resolution, TanDEM-X)"
+echo "Much higher quality than SRTM, especially in urban/hilly areas"
+echo ""
 
-# Create DEM directory
 mkdir -p "$DEM_DIR"
 cd "$DEM_DIR"
 
-echo "Downloading SRTM (Shuttle Radar Topography Mission) tiles..."
-echo "Hungary is covered by tiles: N45-N49, E16-E23"
+# Copernicus DEM GLO-30 on AWS Open Data (public bucket, no auth needed)
+BASE_URL="https://copernicus-dem-30m.s3.amazonaws.com"
+
+# Hungary bounds: ~45.7-48.6 N, ~16.1-22.9 E
+# We use 1-degree tiles, so need N45-N48, E016-E022
+LATS=(45 46 47 48)
+LONS=(16 17 18 19 20 21 22)
+
+DOWNLOADED_FILES=""
+
+echo "Downloading 1-degree tiles covering Hungary..."
+echo "(tiles missing from the bucket are skipped - e.g. water-only areas)"
 echo ""
 
-# SRTM tiles covering Hungary (approximately)
-# Format: SRTM_[hemisphere][latitude][hemisphere][longitude].hgt.zip
-# We'll download from OpenTopography or CGIAR
+for lat in "${LATS[@]}"; do
+    for lon in "${LONS[@]}"; do
+        lat_str=$(printf "N%02d" $lat)
+        lon_str=$(printf "E%03d" $lon)
+        tile_name="Copernicus_DSM_COG_10_${lat_str}_00_${lon_str}_00_DEM"
+        tile_file="${tile_name}.tif"
+        tile_url="${BASE_URL}/${tile_name}/${tile_file}"
 
-# Using CGIAR SRTM v4.1 (90m resolution)
-# Alternative source: https://srtm.csi.cgiar.org/wp-content/uploads/files/srtm_5x5/TIFF/
+        if [ -f "$tile_file" ]; then
+            echo "✓ ${tile_file} already exists, skipping..."
+            DOWNLOADED_FILES="$DOWNLOADED_FILES /data/${tile_file}"
+            continue
+        fi
 
-BASE_URL="https://srtm.csi.cgiar.org/wp-content/uploads/files/srtm_5x5/TIFF"
-
-# Hungary coverage: approximately srtm_39_03 and srtm_40_03
-# These 5x5 degree tiles cover the Hungarian region
-TILES=(
-    "srtm_39_03"
-    "srtm_40_03"
-)
-
-echo "Downloading SRTM tiles (5x5 degree coverage)..."
-echo "This may take 10-15 minutes (tiles are ~30-50MB each)"
-echo ""
-
-for tile in "${TILES[@]}"; do
-    if [ -f "${tile}.tif" ]; then
-        echo "✓ ${tile}.tif already exists, skipping..."
-        continue
-    fi
-
-    echo "Downloading ${tile}.zip..."
-    wget -c "${BASE_URL}/${tile}.zip" -O "${tile}.zip" || {
-        echo "Warning: Failed to download ${tile}, trying alternative source..."
-        # Alternative: OpenTopography API (requires free account)
-        echo "Note: You may need to manually download SRTM data from:"
-        echo "  - https://www.opentopodata.org/"
-        echo "  - https://srtm.csi.cgiar.org/"
-        continue
-    }
-
-    echo "Extracting ${tile}.tif..."
-    unzip -o "${tile}.zip"
-    rm "${tile}.zip"
+        echo "Downloading ${tile_file}..."
+        if wget -q --timeout=60 "$tile_url" -O "$tile_file"; then
+            echo "  ✓ downloaded"
+            DOWNLOADED_FILES="$DOWNLOADED_FILES /data/${tile_file}"
+        else
+            echo "  - not found, skipping (water or no coverage)"
+            rm -f "$tile_file"
+        fi
+    done
 done
 
 echo ""
-echo "Merging tiles into single Hungary DEM..."
 
-# Check if we have any tif files
-if ls *.tif 1> /dev/null 2>&1; then
-    echo "Merging and clipping to Hungary bounds..."
-    echo ""
-    echo "Files in current directory:"
-    ls -lh *.tif
-    echo ""
-
-    # Build list of input files
-    INPUT_FILES=""
-    for tif in *.tif; do
-        if [ -f "$tif" ]; then
-            INPUT_FILES="$INPUT_FILES /data/$tif"
-        fi
-    done
-
-    if [ -z "$INPUT_FILES" ]; then
-        echo "Error: No .tif files found to merge"
-        exit 1
-    fi
-
-    echo "Container will see these paths:"
-    echo "$INPUT_FILES"
-    echo ""
-    echo "Mounting $DEM_DIR as /data in container"
-    echo ""
-
-    # Hungary approximate bounds: [16.1, 45.7, 22.9, 48.6] (minlon, minlat, maxlon, maxlat)
-    # We'll use podman with GDAL image to merge and clip
-
-    podman run --rm \
-        -v "$DEM_DIR:/data" \
-        ghcr.io/osgeo/gdal:alpine-small-latest \
-        sh -c "gdalwarp -te 16.0 45.5 23.0 48.7 \
-        -tr 0.0008333333 0.0008333333 \
-        -r cubic \
-        -co COMPRESS=DEFLATE \
-        -co TILED=YES \
-        $INPUT_FILES /data/hungary-dem.tif"
-
-    # Clean up individual tiles
-    for tile in "${TILES[@]}"; do
-        rm -f "${tile}.tif"
-    done
-
-    echo ""
+if [ -z "$DOWNLOADED_FILES" ]; then
     echo "======================================"
-    echo "DEM Download Complete!"
+    echo "Error: No tiles downloaded!"
     echo "======================================"
     echo ""
-    echo "DEM file: $DEM_DIR/hungary-dem.tif"
-    echo ""
-    ls -lh "$DEM_DIR/hungary-dem.tif"
-    echo ""
-    echo "Next step: Run ./scripts/generate-contours.sh"
-else
-    echo ""
-    echo "======================================"
-    echo "Manual Download Required"
-    echo "======================================"
-    echo ""
-    echo "Automatic download failed. Please manually download SRTM data:"
-    echo ""
-    echo "1. Go to: https://srtm.csi.cgiar.org/srtmdata/"
-    echo "2. Download tiles covering Hungary (approximately 39_03 and 40_03)"
-    echo "3. Extract .tif files to: $DEM_DIR/"
-    echo "4. Run this script again to merge them"
+    echo "The AWS bucket may be unreachable. Try alternative sources:"
+    echo "  - https://opentopography.org/ (requires free account)"
+    echo "  - https://www.copernicus.eu/en/access-data"
     echo ""
     exit 1
 fi
+
+echo "Merging tiles and clipping to Hungary bounds..."
+echo "Hungary bounds: [16.0, 45.5, 23.0, 48.7]"
+echo ""
+
+podman run --rm \
+    -v "$DEM_DIR:/data" \
+    ghcr.io/osgeo/gdal:alpine-small-latest \
+    gdalwarp \
+        -te 16.0 45.5 23.0 48.7 \
+        -tr 0.0002777778 0.0002777778 \
+        -r bilinear \
+        -srcnodata -32768 \
+        -dstnodata -32768 \
+        -multi \
+        -wo NUM_THREADS=ALL_CPUS \
+        -co COMPRESS=DEFLATE \
+        -co TILED=YES \
+        $DOWNLOADED_FILES \
+        /data/hungary-dem.tif
+
+echo ""
+echo "Cleaning up individual tiles..."
+for lat in "${LATS[@]}"; do
+    for lon in "${LONS[@]}"; do
+        lat_str=$(printf "N%02d" $lat)
+        lon_str=$(printf "E%03d" $lon)
+        tile_name="Copernicus_DSM_COG_10_${lat_str}_00_${lon_str}_00_DEM"
+        rm -f "${tile_name}.tif"
+    done
+done
+
+echo ""
+echo "======================================"
+echo "DEM Download Complete!"
+echo "======================================"
+echo ""
+echo "DEM file: $DEM_DIR/hungary-dem.tif"
+echo ""
+ls -lh "$DEM_DIR/hungary-dem.tif"
+echo ""
+echo "Resolution: ~30m (Copernicus DEM GLO-30)"
+echo "Next step: Run ./scripts/generate-contours.sh"
+echo "           or: make terrain"
+echo ""

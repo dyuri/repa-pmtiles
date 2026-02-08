@@ -1,4 +1,4 @@
-.PHONY: help download fonts setup generate contours up down restart logs clean all
+.PHONY: help download fonts setup generate contours terrain up down restart logs clean all
 .PHONY: garmin-image garmin garmin-clean all-maps
 .PHONY: dev-up dev-down dev-logs style-to-maputnik style-from-maputnik
 
@@ -10,6 +10,7 @@ help:
 	@echo "  make fonts       - Download font glyphs for map labels"
 	@echo "  make generate    - Generate PMTiles from OSM data"
 	@echo "  make contours    - Generate elevation contour lines (optional)"
+	@echo "  make terrain     - Generate terrain-RGB tiles (3D terrain + hillshade)"
 	@echo "  make up          - Start the nginx server"
 	@echo "  make down        - Stop the nginx server"
 	@echo "  make restart     - Restart the nginx server"
@@ -51,6 +52,14 @@ setup: download fonts
 generate:
 	@echo "Generating PMTiles..."
 	@./scripts/generate-tiles.sh
+
+terrain:
+	@echo "Generating terrain-RGB tiles for 3D terrain and hillshade..."
+	@if [ ! -f data/dem/hungary-dem.tif ]; then \
+		echo "DEM not found, downloading..."; \
+		./scripts/download-dem.sh; \
+	fi
+	@./scripts/generate-terrain.sh
 
 contours:
 	@echo "Generating contour lines..."
