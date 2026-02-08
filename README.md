@@ -244,6 +244,21 @@ For 60-80k daily pageviews:
 - **CPU**: Minimal (nginx serves static files)
 - **Memory**: Low (PMTiles don't need to be loaded into memory)
 
+## Publishing / Deploying
+
+To copy all web assets and tiles to a target directory with URLs substituted:
+
+```bash
+./scripts/publish.sh <target-dir> <destination-url>
+```
+
+Example:
+```bash
+./scripts/publish.sh /var/www/hiking https://maps.example.com
+```
+
+This copies `www/` and `tiles/*.pmtiles` to the target directory and replaces all `http://localhost:8080` references in HTML and JSON files with the destination URL.
+
 ## Deployment to Production
 
 ### Option 1: Deploy with HTTPS

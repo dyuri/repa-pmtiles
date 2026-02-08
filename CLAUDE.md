@@ -20,23 +20,29 @@ Self-hosted vector tile map for Hungarian hiking trails. Docker/Podman-based pip
 | `config/process-hiking.lua` | Tilemaker Lua: OSM → trail/POI/road extraction |
 | `nginx/nginx.conf` | nginx with CORS + range request support |
 | `Makefile` | All build targets |
+| `scripts/dem_to_terrain_rgb.py` | DEM → Mapbox terrain-RGB GeoTIFF (reproject, fill voids, encode) |
+| `scripts/generate-terrain.sh` | Full terrain-RGB PMTiles pipeline |
+| `scripts/test-terrain-budakeszi.sh` | Quick test pipeline for Budakeszi area only |
+| `scripts/publish.sh` | Copy assets to target dir, substitute URLs |
 
 ## Tile Sources (style.json)
 
 - `hungary-hiking` — vector PMTiles (503 MB): trails, POIs, roads, landuse, water, buildings, place_labels, boundaries
 - `contours` — vector PMTiles (71 MB): elevation contours at 20m intervals
+- `terrain-rgb` — raster-dem PMTiles: Mapbox-encoded elevation for hillshade + 3D terrain
 
 ## Generated Tiles
 
 ```
-tiles/hungary-hiking.pmtiles    503 MB  main OSM data
-tiles/hungary-contours.pmtiles   71 MB  elevation contours
-data/dem/hungary-dem.tif         13 MB  SRTM 90m raw DEM (Hungary bounds)
+tiles/hungary-hiking.pmtiles       503 MB  main OSM data
+tiles/hungary-contours.pmtiles      71 MB  elevation contours
+tiles/hungary-terrain-rgb.pmtiles   ~15 MB  terrain-RGB (Mapbox encoding, zoom 5-12)
+data/dem/hungary-dem.tif            ~80 MB  Copernicus DEM GLO-30 (30m, Hungary bounds)
 ```
 
-## Map Layers (23 total)
+## Map Layers (24 total)
 
-Background → hillshade (if added) → forest/grass/farmland/water → waterway → boundaries → contours → buildings → roads → physical-paths → hiking-routes → pois → labels → place-labels
+Background → hillshade → forest/grass/farmland/water → waterway → boundaries → contours → buildings → roads → physical-paths → hiking-routes → pois → labels → place-labels
 
 Trail colors: red, blue, green, yellow, orange, purple, black, brown (Hungarian OSMC system)
 
@@ -45,6 +51,7 @@ Trail colors: red, blue, green, yellow, orange, purple, black, brown (Hungarian 
 ```
 OSM PBF → Tilemaker + Lua → MBTiles → go-pmtiles convert → PMTiles
 DEM TIF → gdal_contour → GeoJSON → tippecanoe → PMTiles
+DEM TIF → dem_to_terrain_rgb.py (reproject+encode) → gdal_translate MBTiles → gdaladdo → go-pmtiles convert → PMTiles
 ```
 
 ## Make Targets
@@ -54,6 +61,7 @@ make download      # Download hungary-latest.osm.pbf (~307 MB)
 make fonts         # Download Noto Sans PBF glyphs → www/fonts/
 make generate      # OSM → PMTiles (10-30 min via Docker)
 make contours      # DEM download + contour PMTiles (20m intervals)
+make terrain       # DEM → terrain-RGB PMTiles (hillshade + 3D terrain)
 make up            # Start nginx (podman compose up -d)
 make topo          # download + fonts + generate + contours
 make all           # download + fonts + generate + up
@@ -64,7 +72,8 @@ make dev-up        # Start with Maputnik editor on port 8888
 
 - `ghcr.io/systemed/tilemaker:master` — OSM → MBTiles
 - `ghcr.io/protomaps/go-pmtiles:latest` — MBTiles → PMTiles, verification
-- `ghcr.io/osgeo/gdal:alpine-small-latest` — DEM processing, contours
+- `ghcr.io/osgeo/gdal:alpine-small-latest` — DEM processing, contours, MBTiles conversion
+- `ghcr.io/osgeo/gdal:alpine-normal-latest` — terrain-RGB encoding (needs Python/numpy)
 - `nginx:alpine` — tile server
 
 ## Map Init (index.html)
@@ -81,11 +90,23 @@ new maplibregl.Map({
 
 Interactive layers: `hiking-routes`, `physical-paths`, `pois`
 
+UI controls: Hillshade toggle, 3D Terrain toggle + exaggeration slider (0.5×–5×)
+
+## 3D Terrain / Hillshade
+
+- Source: `terrain-rgb` (`raster-dem`, Mapbox encoding)
+- Hillshade layer always rendered (toggleable), exaggeration 0.8
+- 3D terrain via `map.setTerrain()` with exaggeration slider
+- DEM source: Copernicus DEM GLO-30 (30m, downloaded from AWS public S3)
+- Encoding: Mapbox (`elevation = -10000 + (R*65536 + G*256 + B) * 0.1`)
+- Pipeline details in `3DTERRAIN.md`
+
 ## Known Issues / Workarounds
 
 - MapLibre "Unimplemented type: 4" error suppressed via `map.on('error', ...)` handler — occurs with complex route geometries
 - Trail symbols (`trail_symbol`, `trail_text`, `trail_text_color`) commented out in `config/process-hiking.lua` to avoid MapLibre rendering errors; only `trail_color` is active
 - `hungary-hiking.pmtiles` max zoom is 14; style layers using it respect that
+- Right-click drag on map canvas (3D rotation) has `contextmenu` and `mousedown` propagation stopped to prevent Chrome extension interference
 
 ## Fonts
 
@@ -100,11 +121,9 @@ make dev-up               # Start Maputnik on port 8888
 make style-from-maputnik  # Convert back to pmtiles:// URLs
 ```
 
-## Pending Work
+## Publishing
 
-- **3D Terrain + Hillshade**: Full plan in `3DTERRAIN.md`
-  - Generate terrain-RGB PMTiles from existing `data/dem/hungary-dem.tif`
-  - Add `raster-dem` source + `hillshade` layer to `style.json`
-  - Add terrain/hillshade toggle buttons to `index.html`
-  - Add `terrain` Makefile target
-  - Pipeline: gdalwarp → gdal_calc (Terrarium encoding) → gdal_translate -of MBTiles → go-pmtiles convert
+```bash
+./scripts/publish.sh <target-dir> <destination-url>
+# Example: ./scripts/publish.sh /var/www/hiking https://maps.example.com
+```
