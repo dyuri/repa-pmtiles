@@ -11,7 +11,7 @@ CONFIG_DIR="$PROJECT_DIR/config"
 TILES_DIR="$PROJECT_DIR/tiles"
 
 echo "======================================"
-echo "Generating Hungarian Hiking Tiles"
+echo "Generating Hungarian Map Tiles"
 echo "======================================"
 
 # Check if OSM data exists
@@ -22,9 +22,9 @@ if [ ! -f "$DATA_DIR/hungary-latest.osm.pbf" ]; then
 fi
 
 # Check if config files exist
-if [ ! -f "$CONFIG_DIR/config-hiking.json" ] || [ ! -f "$CONFIG_DIR/process-hiking.lua" ]; then
+if [ ! -f "$CONFIG_DIR/config-street.json" ] || [ ! -f "$CONFIG_DIR/process-street.lua" ]; then
     echo "Error: Configuration files not found!"
-    echo "Please ensure config-hiking.json and process-hiking.lua exist in the config/ directory"
+    echo "Please ensure config-street.json and process-street.lua exist in the config/ directory"
     exit 1
 fi
 
@@ -48,9 +48,9 @@ podman run --rm \
   -v "$STORE_DIR:/store" \
   ghcr.io/systemed/tilemaker:master \
   --input /data/hungary-latest.osm.pbf \
-  --output /output/hungary-hiking.mbtiles \
-  --config /config/config-hiking.json \
-  --process /config/process-hiking.lua \
+  --output /output/hungary-map.mbtiles \
+  --config /config/config-street.json \
+  --process /config/process-street.lua \
   --store /store
 
 echo ""
@@ -61,7 +61,7 @@ echo ""
 podman run --rm \
   -v "$TILES_DIR:/tiles" \
   ghcr.io/protomaps/go-pmtiles:latest \
-  convert /tiles/hungary-hiking.mbtiles /tiles/hungary-hiking.pmtiles
+  convert /tiles/hungary-map.mbtiles /tiles/hungary-map.pmtiles
 
 echo ""
 echo "Step 3: Verifying PMTiles..."
@@ -71,14 +71,14 @@ echo ""
 podman run --rm \
   -v "$TILES_DIR:/tiles" \
   ghcr.io/protomaps/go-pmtiles:latest \
-  verify /tiles/hungary-hiking.pmtiles
+  verify /tiles/hungary-map.pmtiles
 
 echo ""
 echo "Step 4: Cleaning up temporary files..."
 echo ""
 
 # Remove MBTiles to save space
-rm -f "$TILES_DIR/hungary-hiking.mbtiles"
+rm -f "$TILES_DIR/hungary-map.mbtiles"
 
 # Remove store directory (can be large)
 rm -rf "$STORE_DIR"
@@ -88,9 +88,9 @@ echo "======================================"
 echo "Tile generation complete!"
 echo "======================================"
 echo ""
-echo "PMTiles file: $TILES_DIR/hungary-hiking.pmtiles"
+echo "PMTiles file: $TILES_DIR/hungary-map.pmtiles"
 echo ""
 echo "File size:"
-ls -lh "$TILES_DIR/hungary-hiking.pmtiles"
+ls -lh "$TILES_DIR/hungary-map.pmtiles"
 echo ""
 echo "Next step: Run 'docker-compose up -d' to start the nginx server"

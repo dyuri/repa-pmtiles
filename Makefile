@@ -1,16 +1,14 @@
-.PHONY: help download fonts setup generate contours terrain up down restart logs clean all
+.PHONY: help download fonts setup generate up down restart logs clean all
 .PHONY: garmin-image garmin garmin-clean all-maps
 .PHONY: dev-up dev-down dev-logs style-to-maputnik style-from-maputnik
 
 help:
-	@echo "Hungarian Hiking Maps - Docker Setup"
+	@echo "Hungarian Map - Docker Setup"
 	@echo ""
 	@echo "Available commands:"
 	@echo "  make download    - Download Hungarian OSM data"
 	@echo "  make fonts       - Download font glyphs for map labels"
 	@echo "  make generate    - Generate PMTiles from OSM data"
-	@echo "  make contours    - Generate elevation contour lines (optional)"
-	@echo "  make terrain     - Generate terrain-RGB tiles (3D terrain + hillshade)"
 	@echo "  make up          - Start the nginx server"
 	@echo "  make down        - Stop the nginx server"
 	@echo "  make restart     - Restart the nginx server"
@@ -18,9 +16,6 @@ help:
 	@echo "  make clean       - Clean up temporary files"
 	@echo "  make setup       - Download OSM data and fonts"
 	@echo "  make all         - Complete setup: download, fonts, generate, start server"
-	@echo ""
-	@echo "Topographic maps:"
-	@echo "  make topo        - Full topographic setup with contours"
 	@echo ""
 	@echo "Garmin device maps:"
 	@echo "  make garmin-image    - Build Docker image for Garmin tools"
@@ -52,42 +47,6 @@ setup: download fonts
 generate:
 	@echo "Generating PMTiles..."
 	@./scripts/generate-tiles.sh
-
-terrain:
-	@echo "Generating terrain-RGB tiles for 3D terrain and hillshade..."
-	@if [ ! -f data/dem/hungary-dem.tif ]; then \
-		echo "DEM not found, downloading..."; \
-		./scripts/download-dem.sh; \
-	fi
-	@./scripts/generate-terrain.sh
-
-contours:
-	@echo "Generating contour lines..."
-	@echo ""
-	@echo "Step 1: Downloading DEM data..."
-	@./scripts/download-dem.sh
-	@echo ""
-	@echo "Step 2: Generating contours..."
-	@./scripts/generate-contours.sh 20
-	@echo ""
-	@echo "Contours complete! Update www/style.json to add contours."
-	@echo "See CONTOURS.md for instructions."
-
-topo: download fonts generate contours
-	@echo ""
-	@echo "=========================================="
-	@echo "Topographic Map Setup Complete!"
-	@echo "=========================================="
-	@echo ""
-	@echo "Generated files:"
-	@echo "  - tiles/hungary-hiking.pmtiles (trails, POIs, landuse)"
-	@echo "  - tiles/hungary-contours.pmtiles (elevation contours)"
-	@echo ""
-	@echo "Next steps:"
-	@echo "  1. Update www/style.json to include contours (see CONTOURS.md)"
-	@echo "  2. Run: make up"
-	@echo "  3. Open: http://localhost:8080"
-	@echo ""
 
 up:
 	@echo "Starting nginx server..."
@@ -138,7 +97,7 @@ all-maps: download fonts generate garmin
 	@echo "=========================================="
 	@echo ""
 	@echo "PMTiles (web):"
-	@echo "  tiles/hungary-hiking.pmtiles"
+	@echo "  tiles/hungary-map.pmtiles"
 	@echo ""
 	@echo "Garmin IMG (device):"
 	@echo "  garmin-output/gmapsupp.img"

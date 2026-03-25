@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>Hungarian Hiking Map</title>
+    <title>Hungarian Map</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="icon" href="favicon.svg" type="image/svg+xml">
     <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
@@ -40,66 +40,12 @@
             font-size: 12px;
             color: #666;
         }
-        .terrain-controls {
-            position: absolute;
-            top: 90px;
-            right: 10px;
-            background: white;
-            border-radius: 5px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-            z-index: 1;
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-            padding: 6px;
-        }
-        .terrain-btn {
-            padding: 6px 10px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            background: white;
-            cursor: pointer;
-            font-size: 12px;
-            font-family: inherit;
-            white-space: nowrap;
-        }
-        .terrain-btn.active {
-            background: #4a90d9;
-            color: white;
-            border-color: #3a7bc8;
-        }
-        .terrain-btn:hover { background: #f0f0f0; }
-        .terrain-btn.active:hover { background: #3a7bc8; }
-        .exaggeration-row {
-            display: none;
-            align-items: center;
-            gap: 6px;
-            padding: 2px 2px 0;
-        }
-        .exaggeration-row.visible { display: flex; }
-        .exaggeration-row label {
-            font-size: 11px;
-            color: #555;
-            white-space: nowrap;
-        }
-        .exaggeration-row input[type=range] {
-            width: 80px;
-            cursor: pointer;
-        }
     </style>
 </head>
 <body>
     <div class="info-box">
-        <h3>Hungarian Hiking Map</h3>
+        <h3>Hungarian Map</h3>
         <p>Vector tiles from OpenStreetMap</p>
-    </div>
-    <div class="terrain-controls">
-        <button class="terrain-btn active" id="btn-hillshade" title="Toggle hillshade overlay">Hillshade</button>
-        <button class="terrain-btn" id="btn-terrain" title="Toggle 3D terrain">3D Terrain</button>
-        <div class="exaggeration-row" id="exaggeration-row">
-            <label for="exaggeration-slider">Exag: <span id="exaggeration-value">1.2</span>×</label>
-            <input type="range" id="exaggeration-slider" min="0.5" max="5" step="0.1" value="1.2">
-        </div>
     </div>
     <div id="map"></div>
     <script>
@@ -141,206 +87,16 @@
             hash: true  // Enable automatic hash updates
         });
 
-        // Suppress "Unimplemented type" errors (MapLibre bug with certain geometries)
-        map.on('error', (e) => {
-            if (e.error && e.error.message && e.error.message.includes('Unimplemented type')) {
-                // Silently ignore - this is a known MapLibre issue with complex route geometries
-                // The map continues to function normally
-                return;
-            }
-            // Log other errors
-            console.error('Map error:', e);
-        });
-
         // Add navigation controls
         map.addControl(new maplibregl.NavigationControl());
 
         // Add scale
         map.addControl(new maplibregl.ScaleControl());
 
-        // Click handler for trail info
-        map.on('click', (e) => {
-            // Check for both hiking routes and physical paths
-            const features = map.queryRenderedFeatures(e.point, {
-                layers: ['hiking-routes', 'physical-paths']
-            });
-
-            if (!features.length) return;
-
-            const feature = features[0];
-            const props = feature.properties;
-
-            // Color mapping for visual indicator
-            const colorMap = {
-                'red': '#E63946',
-                'blue': '#2A9D8F',
-                'green': '#52B788',
-                'yellow': '#F4D03F',
-                'orange': '#F77F00',
-                'purple': '#9D4EDD',
-                'black': '#2B2D42',
-                'brown': '#8B4513',
-                'white': '#F5F5F5'
-            };
-
-            // Symbol mapping for better display
-            const symbolMap = {
-                'bar': '▬', 'stripe': '▬',
-                'cross': '+', 'x': '✕',
-                'circle': '●', 'dot': '●',
-                'rectangle': '▮',
-                'triangle': '▲',
-                'pointer': '▶',
-                'diamond': '◆'
-            };
-
-            let html = '<div style="min-width: 200px;">';
-
-            // Title with color indicator
-            if (props.class === 'route') {
-                // Hiking route (relation)
-                const color = colorMap[props.trail_color] || '#888';
-
-                // Prefer text symbol (like "M", "MZ") over geometric symbol (like ▲, ●)
-                const symbol = props.trail_text || symbolMap[props.trail_symbol] || props.trail_symbol || '●';
-
-                // Use text color if available, otherwise use trail color
-                const textColor = props.trail_text_color ? (colorMap[props.trail_text_color] || props.trail_text_color) : 'white';
-
-                html += `<div style="display: flex; align-items: center; margin-bottom: 8px;">`;
-                html += `<div style="width: ${props.trail_text && props.trail_text.length > 1 ? '28' : '20'}px; height: 20px; background: ${color}; border-radius: 3px; margin-right: 8px; display: flex; align-items: center; justify-content: center; color: ${textColor}; font-weight: bold; font-size: ${props.trail_text ? '11' : '14'}px;">${symbol}</div>`;
-                html += `<strong style="font-size: 14px;">${props.name || 'Unnamed Route'}</strong>`;
-                html += `</div>`;
-
-                // Route details
-                html += `<div style="font-size: 12px; color: #555;">`;
-                if (props.ref) html += `<div><strong>Ref:</strong> ${props.ref}</div>`;
-                if (props.trail_color) html += `<div><strong>Color:</strong> ${props.trail_color}</div>`;
-                if (props.osmc_symbol) html += `<div><strong>OSMC:</strong> <code style="font-size: 10px;">${props.osmc_symbol}</code></div>`;
-                if (props.route) html += `<div><strong>Type:</strong> ${props.route}</div>`;
-                html += `<div style="margin-top: 4px; font-style: italic; color: #777;">Hiking Route</div>`;
-                html += `</div>`;
-            } else {
-                // Physical path (way)
-                html += `<strong style="font-size: 14px;">${props.name || 'Path'}</strong><br>`;
-                html += `<div style="font-size: 12px; color: #555; margin-top: 5px;">`;
-                if (props.type) html += `<div><strong>Type:</strong> ${props.type}</div>`;
-                if (props.surface) html += `<div><strong>Surface:</strong> ${props.surface}</div>`;
-                if (props.difficulty) html += `<div><strong>SAC scale:</strong> ${props.difficulty}</div>`;
-                if (props.visibility) html += `<div><strong>Visibility:</strong> ${props.visibility}</div>`;
-                html += `<div style="margin-top: 4px; font-style: italic; color: #777;">Physical Path</div>`;
-                html += `</div>`;
-            }
-
-            html += '</div>';
-
-            new maplibregl.Popup()
-                .setLngLat(e.lngLat)
-                .setHTML(html)
-                .addTo(map);
-        });
-
-        // Click handler for POIs (points of interest)
-        map.on('click', 'pois', (e) => {
-            const features = map.queryRenderedFeatures(e.point, {
-                layers: ['pois']
-            });
-
-            if (!features.length) return;
-
-            const feature = features[0];
-            const props = feature.properties;
-
-            // Icon mapping for POI types
-            const iconMap = {
-                'peak': '⛰️',
-                'viewpoint': '👁️',
-                'alpine_hut': '🏠',
-                'shelter': '⛺',
-                'wilderness_hut': '🏚️',
-                'drinking_water': '💧',
-                'spring': '🌊',
-                'saddle': '⛰️',
-                'cave_entrance': '🕳️'
-            };
-
-            let html = '<div style="min-width: 180px;">';
-            const icon = iconMap[props.type] || '📍';
-
-            html += `<div style="display: flex; align-items: center; margin-bottom: 8px;">`;
-            html += `<span style="font-size: 24px; margin-right: 8px;">${icon}</span>`;
-            html += `<strong style="font-size: 14px;">${props.name || props.type}</strong>`;
-            html += `</div>`;
-
-            html += `<div style="font-size: 12px; color: #555;">`;
-            html += `<div><strong>Type:</strong> ${props.type.replace('_', ' ')}</div>`;
-            if (props.elevation) html += `<div><strong>Elevation:</strong> ${props.elevation}m</div>`;
-            html += `</div>`;
-
-            html += '</div>';
-
-            new maplibregl.Popup()
-                .setLngLat(e.lngLat)
-                .setHTML(html)
-                .addTo(map);
-        });
-
-        // Change cursor on hover
-        ['hiking-routes', 'physical-paths', 'pois'].forEach(layer => {
-            map.on('mouseenter', layer, () => {
-                map.getCanvas().style.cursor = 'pointer';
-            });
-
-            map.on('mouseleave', layer, () => {
-                map.getCanvas().style.cursor = '';
-            });
-        });
-
-        // Log when map loads successfully
         map.on('load', () => {
             console.log('Map loaded successfully!');
         });
 
-        // Terrain and hillshade toggles
-        let terrainEnabled = false;
-        let hillshadeEnabled = true;
-
-        let terrainExaggeration = 1.2;
-        const exaggerationSlider = document.getElementById('exaggeration-slider');
-        const exaggerationValue = document.getElementById('exaggeration-value');
-        const exaggerationRow = document.getElementById('exaggeration-row');
-
-        document.getElementById('btn-terrain').addEventListener('click', function() {
-            terrainEnabled = !terrainEnabled;
-            this.classList.toggle('active', terrainEnabled);
-            exaggerationRow.classList.toggle('visible', terrainEnabled);
-
-            if (terrainEnabled) {
-                map.setTerrain({ source: 'terrain-rgb', exaggeration: terrainExaggeration });
-                if (map.getPitch() < 20) {
-                    map.easeTo({ pitch: 50, duration: 800 });
-                }
-            } else {
-                map.setTerrain(null);
-                map.easeTo({ pitch: 0, duration: 600 });
-            }
-        });
-
-        exaggerationSlider.addEventListener('input', function() {
-            terrainExaggeration = parseFloat(this.value);
-            exaggerationValue.textContent = terrainExaggeration.toFixed(1);
-            if (terrainEnabled) {
-                map.setTerrain({ source: 'terrain-rgb', exaggeration: terrainExaggeration });
-            }
-        });
-
-        document.getElementById('btn-hillshade').addEventListener('click', function() {
-            hillshadeEnabled = !hillshadeEnabled;
-            this.classList.toggle('active', hillshadeEnabled);
-            map.setLayoutProperty('hillshade', 'visibility', hillshadeEnabled ? 'visible' : 'none');
-        });
-
-        // Log any errors
         map.on('error', (e) => {
             console.error('Map error:', e);
         });

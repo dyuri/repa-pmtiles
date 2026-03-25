@@ -6,10 +6,10 @@ services:
     ports:
       - "8080:80"
     volumes:
-      - ./tiles:/usr/share/nginx/html/tiles:ro
-      - ./www:/usr/share/nginx/html:ro
-      - ./nginx/nginx.conf.template:/etc/nginx/templates/nginx.conf.template:ro
-      - ./docker/nginx/entrypoint.sh:/docker-entrypoint.d/40-envsubst-on-custom-templates.sh:ro
+      - ./tiles:/usr/share/nginx/html/tiles
+      - ./www:/usr/share/nginx/html
+      - ./nginx/nginx.conf.template:/etc/nginx/templates/nginx.conf.template
+      - ./docker/nginx/entrypoint.sh:/docker-entrypoint.d/40-envsubst-on-custom-templates.sh
     environment:
       # Space-separated list of allowed referrer hostnames
       # Default allows localhost and example.com
