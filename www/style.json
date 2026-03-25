@@ -1,6 +1,6 @@
 {
   "version": 8,
-  "name": "Hungarian Map - Dark",
+  "name": "Hungarian Map - Light",
   "metadata": {"maputnik:renderer": "mbgljs"},
   "sources": {
     "hungary-hiking": {
@@ -17,15 +17,7 @@
       "minzoom": 0,
       "layout": {"visibility": "visible"},
       "paint": {
-        "background-color": [
-          "interpolate",
-          ["exponential", 1],
-          ["zoom"],
-          5,
-          "hsl(220, 20%, 14%)",
-          14,
-          "hsl(220, 10%, 18%)"
-        ]
+        "background-color": "hsl(45, 15%, 94%)"
       }
     },
     {
@@ -36,7 +28,7 @@
       "minzoom": 9,
       "filter": ["==", "type", "forest"],
       "layout": {"visibility": "visible"},
-      "paint": {"fill-color": "hsl(91, 38%, 14%)", "fill-opacity": 0.5}
+      "paint": {"fill-color": "hsl(110, 30%, 82%)", "fill-opacity": 0.8}
     },
     {
       "id": "grass",
@@ -46,7 +38,7 @@
       "minzoom": 11,
       "filter": ["in", "type", "grass", "meadow", "park"],
       "layout": {"visibility": "visible"},
-      "paint": {"fill-color": "hsla(90, 35%, 9%, 0.3)"}
+      "paint": {"fill-color": "hsl(105, 35%, 86%)"}
     },
     {
       "id": "farmland",
@@ -56,7 +48,7 @@
       "minzoom": 11,
       "filter": ["in", "type", "farmland", "orchard", "vineyard"],
       "layout": {"visibility": "visible"},
-      "paint": {"fill-color": "hsla(58, 55%, 13%, 0.4)"}
+      "paint": {"fill-color": "hsl(58, 40%, 88%)"}
     },
     {
       "id": "industrial",
@@ -66,7 +58,7 @@
       "minzoom": 11,
       "filter": ["in", "type", "industrial", "commercial", "retail"],
       "layout": {"visibility": "visible"},
-      "paint": {"fill-color": "hsla(220, 20%, 12%, 0.6)"}
+      "paint": {"fill-color": "hsl(30, 15%, 86%)"}
     },
     {
       "id": "water",
@@ -74,17 +66,7 @@
       "source": "hungary-hiking",
       "source-layer": "water",
       "layout": {"visibility": "visible"},
-      "paint": {
-        "fill-color": [
-          "interpolate",
-          ["linear"],
-          ["zoom"],
-          6,
-          "hsl(210, 61%, 20%)",
-          14,
-          "hsl(210, 61%, 18%)"
-        ]
-      }
+      "paint": {"fill-color": "hsl(205, 65%, 72%)"}
     },
     {
       "id": "waterway",
@@ -94,17 +76,14 @@
       "minzoom": 8,
       "layout": {"line-cap": "round", "line-join": "round"},
       "paint": {
-        "line-color": "hsl(210, 61%, 22%)",
+        "line-color": "hsl(205, 65%, 62%)",
         "line-width": [
           "interpolate",
           ["linear"],
           ["zoom"],
-          8,
-          0.5,
-          12,
-          1.5,
-          14,
-          2.5
+          8, 0.5,
+          12, 1.5,
+          14, 2.5
         ]
       }
     },
@@ -116,10 +95,10 @@
       "minzoom": 3,
       "layout": {"line-cap": "round", "line-join": "round"},
       "paint": {
-        "line-color": "hsl(0, 0%, 32%)",
+        "line-color": "hsl(0, 0%, 55%)",
         "line-dasharray": [3, 2],
         "line-width": ["interpolate", ["linear"], ["zoom"], 3, 0.5, 10, 1.5],
-        "line-opacity": 0.6
+        "line-opacity": 0.7
       }
     },
     {
@@ -131,16 +110,8 @@
       "layout": {"visibility": "visible"},
       "paint": {
         "fill-antialias": true,
-        "fill-color": [
-          "interpolate",
-          ["linear"],
-          ["zoom"],
-          13,
-          "hsl(58, 0%, 12%)",
-          18,
-          "hsl(58, 0%, 10%)"
-        ],
-        "fill-outline-color": "hsl(58, 0%, 11%)"
+        "fill-color": "hsl(30, 12%, 82%)",
+        "fill-outline-color": "hsl(30, 10%, 72%)"
       }
     },
     {
@@ -156,77 +127,23 @@
         "visibility": "visible"
       },
       "paint": {
-        "line-color": "hsl(0, 0%, 18%)",
+        "line-color": [
+          "match",
+          ["get", "type"],
+          "motorway", "hsl(25, 70%, 60%)",
+          "trunk", "hsl(30, 65%, 65%)",
+          "primary", "hsl(45, 60%, 65%)",
+          "hsl(0, 0%, 75%)"
+        ],
         "line-width": [
           "interpolate",
           ["linear"],
           ["zoom"],
-          5,
-          ["match", ["get", "type"], "motorway", 1.5, 0],
-          9,
-          [
-            "match",
-            ["get", "type"],
-            ["motorway", "trunk"],
-            3,
-            ["primary", "secondary"],
-            2,
-            0.5
-          ],
-          12,
-          [
-            "match",
-            ["get", "type"],
-            "motorway",
-            8,
-            "trunk",
-            7,
-            "primary",
-            6,
-            "secondary",
-            5,
-            "tertiary",
-            4,
-            ["residential", "unclassified", "living_street"],
-            3,
-            2
-          ],
-          14,
-          [
-            "match",
-            ["get", "type"],
-            "motorway",
-            10,
-            "trunk",
-            9,
-            "primary",
-            8,
-            "secondary",
-            7,
-            "tertiary",
-            6,
-            ["residential", "unclassified", "living_street"],
-            5,
-            3
-          ],
-          16,
-          [
-            "match",
-            ["get", "type"],
-            "motorway",
-            16,
-            "trunk",
-            14,
-            "primary",
-            12,
-            "secondary",
-            10,
-            "tertiary",
-            8,
-            ["residential", "unclassified", "living_street"],
-            6,
-            4
-          ]
+          5,  ["match", ["get", "type"], "motorway", 1.5, 0],
+          9,  ["match", ["get", "type"], ["motorway", "trunk"], 3, ["primary", "secondary"], 2, 0.5],
+          12, ["match", ["get", "type"], "motorway", 8, "trunk", 7, "primary", 6, "secondary", 5, "tertiary", 4, ["residential", "unclassified", "living_street"], 3, 2],
+          14, ["match", ["get", "type"], "motorway", 10, "trunk", 9, "primary", 8, "secondary", 7, "tertiary", 6, ["residential", "unclassified", "living_street"], 5, 3],
+          16, ["match", ["get", "type"], "motorway", 16, "trunk", 14, "primary", 12, "secondary", 10, "tertiary", 8, ["residential", "unclassified", "living_street"], 6, 4]
         ]
       }
     },
@@ -246,98 +163,24 @@
         "line-color": [
           "match",
           ["get", "type"],
-          "motorway",
-          "hsl(26, 87%, 45%)",
-          "trunk",
-          "hsl(30, 84%, 40%)",
-          "primary",
-          "hsl(46, 77%, 35%)",
-          "secondary",
-          "hsl(60, 60%, 30%)",
-          "tertiary",
-          "hsl(0, 0%, 35%)",
-          ["residential", "unclassified", "living_street"],
-          "hsl(0, 0%, 38%)",
-          ["service", "road", "minor"],
-          "hsl(0, 0%, 32%)",
-          "hsl(0, 0%, 35%)"
+          "motorway",  "hsl(25, 80%, 52%)",
+          "trunk",     "hsl(30, 75%, 56%)",
+          "primary",   "hsl(45, 70%, 58%)",
+          "secondary", "hsl(55, 50%, 72%)",
+          "tertiary",  "hsl(0, 0%, 84%)",
+          ["residential", "unclassified", "living_street"], "hsl(0, 0%, 90%)",
+          ["service", "road", "minor"], "hsl(0, 0%, 88%)",
+          "hsl(0, 0%, 86%)"
         ],
         "line-width": [
           "interpolate",
           ["linear"],
           ["zoom"],
-          5,
-          ["match", ["get", "type"], "motorway", 0.5, 0],
-          9,
-          [
-            "match",
-            ["get", "type"],
-            ["motorway", "trunk"],
-            1.5,
-            ["primary", "secondary"],
-            0.8,
-            0.3
-          ],
-          12,
-          [
-            "match",
-            ["get", "type"],
-            "motorway",
-            4,
-            "trunk",
-            3.5,
-            "primary",
-            2.5,
-            "secondary",
-            2,
-            "tertiary",
-            1.5,
-            ["residential", "unclassified", "living_street"],
-            1,
-            ["service", "road", "minor"],
-            0.5,
-            1
-          ],
-          14,
-          [
-            "match",
-            ["get", "type"],
-            "motorway",
-            6,
-            "trunk",
-            5,
-            "primary",
-            4,
-            "secondary",
-            3.5,
-            "tertiary",
-            3,
-            ["residential", "unclassified", "living_street"],
-            2,
-            ["service", "road", "minor"],
-            1,
-            1.5
-          ],
-          16,
-          [
-            "match",
-            ["get", "type"],
-            "motorway",
-            12,
-            "trunk",
-            10,
-            "primary",
-            8,
-            "secondary",
-            7,
-            "tertiary",
-            6,
-            ["residential", "unclassified", "living_street"],
-            4,
-            ["service", "road", "minor"],
-            2,
-            3
-          ]
+          5,  ["match", ["get", "type"], "motorway", 0.5, 0],
+          9,  ["match", ["get", "type"], ["motorway", "trunk"], 1.5, ["primary", "secondary"], 0.8, 0.3],
+          12, ["match", ["get", "type"], "motorway", 4, "trunk", 3.5, "primary", 2.5, "secondary", 2, "tertiary", 1.5, ["residential", "unclassified", "living_street"], 1, ["service", "road", "minor"], 0.5, 1],
+          14, ["match", ["get", "type"], "motorway", 6, "trunk", 5, "primary", 4, "secondary", 3.5, "tertiary", 3, ["residential", "unclassified", "living_street"], 2, ["service", "road", "minor"], 1, 1.5],
+          16, ["match", ["get", "type"], "motorway", 12, "trunk", 10, "primary", 8, "secondary", 7, "tertiary", 6, ["residential", "unclassified", "living_street"], 4, ["service", "road", "minor"], 2, 3]
         ]
       }
     },
@@ -354,7 +197,7 @@
         "visibility": "visible"
       },
       "paint": {
-        "line-color": "hsl(0, 0%, 28%)",
+        "line-color": "hsl(0, 0%, 65%)",
         "line-width": ["interpolate", ["linear"], ["zoom"], 14, 1, 16, 2],
         "line-dasharray": [2, 1]
       }
@@ -373,26 +216,8 @@
           "interpolate",
           ["linear"],
           ["zoom"],
-          12,
-          [
-            "match",
-            ["get", "type"],
-            ["motorway", "trunk"],
-            10,
-            ["primary", "secondary"],
-            9,
-            8
-          ],
-          16,
-          [
-            "match",
-            ["get", "type"],
-            ["motorway", "trunk"],
-            13,
-            ["primary", "secondary"],
-            12,
-            11
-          ]
+          12, ["match", ["get", "type"], ["motorway", "trunk"], 10, ["primary", "secondary"], 9, 8],
+          16, ["match", ["get", "type"], ["motorway", "trunk"], 13, ["primary", "secondary"], 12, 11]
         ],
         "symbol-placement": "line",
         "text-rotation-alignment": "map",
@@ -400,14 +225,8 @@
         "text-max-angle": 30
       },
       "paint": {
-        "text-color": [
-          "match",
-          ["get", "type"],
-          ["motorway", "trunk", "primary", "secondary"],
-          "hsl(60, 80%, 75%)",
-          "hsl(0, 0%, 65%)"
-        ],
-        "text-halo-color": "hsl(0, 0%, 10%)",
+        "text-color": "hsl(0, 0%, 20%)",
+        "text-halo-color": "hsl(0, 0%, 98%)",
         "text-halo-width": 2,
         "text-opacity": ["interpolate", ["linear"], ["zoom"], 12, 0.7, 14, 1]
       }
@@ -427,8 +246,8 @@
         "text-rotation-alignment": "map"
       },
       "paint": {
-        "text-color": "hsl(210, 60%, 55%)",
-        "text-halo-color": "hsl(0, 0%, 10%)",
+        "text-color": "hsl(205, 65%, 35%)",
+        "text-halo-color": "hsl(0, 0%, 98%)",
         "text-halo-width": 1.5
       }
     },
@@ -450,21 +269,18 @@
           "interpolate",
           ["linear"],
           ["zoom"],
-          6,
-          ["match", ["get", "type"], "city", 12, 10],
-          12,
-          ["match", ["get", "type"], "city", 18, "town", 15, "village", 12, 10],
-          16,
-          ["match", ["get", "type"], "city", 22, "town", 18, "village", 14, 12]
+          6,  ["match", ["get", "type"], "city", 12, 10],
+          12, ["match", ["get", "type"], "city", 18, "town", 15, "village", 12, 10],
+          16, ["match", ["get", "type"], "city", 22, "town", 18, "village", 14, 12]
         ]
       },
       "paint": {
-        "text-color": "hsl(0, 0%, 90%)",
-        "text-halo-color": "hsl(0, 0%, 10%)",
-        "text-halo-width": 2.5,
+        "text-color": "hsl(0, 0%, 15%)",
+        "text-halo-color": "hsl(0, 0%, 98%)",
+        "text-halo-width": 2,
         "text-opacity": ["interpolate", ["linear"], ["zoom"], 6, 0.8, 10, 1]
       }
     }
   ],
-  "id": "hungarian-map-dark"
+  "id": "hungarian-map-light"
 }
