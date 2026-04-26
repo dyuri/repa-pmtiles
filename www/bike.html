@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Hungarian Bike Map</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="icon" href="favicon.svg" type="image/svg+xml">
+    <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+    <link href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" rel="stylesheet">
+    <script src="https://unpkg.com/pmtiles@3.0.7/dist/pmtiles.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        }
+        #map {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 100%;
+        }
+        .info-box {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: white;
+            padding: 10px 15px;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            z-index: 1;
+            max-width: 300px;
+        }
+        .info-box h3 {
+            margin: 0 0 5px 0;
+            font-size: 16px;
+        }
+        .info-box p {
+            margin: 0;
+            font-size: 12px;
+            color: #666;
+        }
+        .terrain-controls {
+            position: absolute;
+            top: 90px;
+            right: 10px;
+            background: white;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            z-index: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            padding: 6px;
+        }
+        .terrain-btn {
+            padding: 6px 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            background: white;
+            cursor: pointer;
+            font-size: 12px;
+            font-family: inherit;
+            white-space: nowrap;
+        }
+        .terrain-btn.active {
+            background: #1a73e8;
+            color: white;
+            border-color: #1557b0;
+        }
+        .terrain-btn:hover { background: #f0f0f0; }
+        .terrain-btn.active:hover { background: #1557b0; }
+        .exaggeration-row {
+            display: none;
+            align-items: center;
+            gap: 6px;
+            padding: 2px 2px 0;
+        }
+        .exaggeration-row.visible { display: flex; }
+        .exaggeration-row label {
+            font-size: 11px;
+            color: #555;
+            white-space: nowrap;
+        }
+        .exaggeration-row input[type=range] {
+            width: 80px;
+            cursor: pointer;
+        }
+        .legend {
+            position: absolute;
+            bottom: 30px;
+            left: 10px;
+            background: rgba(255,255,255,0.93);
+            padding: 10px 13px;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            z-index: 1;
+            font-size: 11px;
+            line-height: 1.7;
+        }
+        .legend-title {
+            font-weight: bold;
+            font-size: 12px;
+            margin-bottom: 4px;
+        }
+        .legend-row {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+        }
+        .legend-line {
+            width: 28px;
+            height: 4px;
+            border-radius: 2px;
+            flex-shrink: 0;
+        }
+        .legend-line-dashed {
+            width: 28px;
+            height: 0;
+            border-top: 3px dashed;
+            flex-shrink: 0;
+        }
+        .legend-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            border: 1.5px solid #555;
+            flex-shrink: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="info-box">
+        <h3>Hungarian Bike Map</h3>
+        <p>Vector tiles from OpenStreetMap</p>
+    </div>
+    <div class="terrain-controls">
+        <button class="terrain-btn active" id="btn-hillshade" title="Toggle hillshade overlay">Hillshade</button>
+        <button class="terrain-btn" id="btn-terrain" title="Toggle 3D terrain">3D Terrain</button>
+        <div class="exaggeration-row" id="exaggeration-row">
+            <label for="exaggeration-slider">Exag: <span id="exaggeration-value">1.2</span>×</label>
+            <input type="range" id="exaggeration-slider" min="0.5" max="5" step="0.1" value="1.2">
+        </div>
+    </div>
+    <div class="legend">
+        <div class="legend-title">Cycling infrastructure</div>
+        <div class="legend-row"><div class="legend-line" style="background:#1a73e8"></div> Dedicated cycleway</div>
+        <div class="legend-row"><div class="legend-line" style="background:#558b2f"></div> Bike path / MTB path</div>
+        <div class="legend-row"><div class="legend-line" style="background:#2e7d32"></div> MTB trail (easy 0–1)</div>
+        <div class="legend-row"><div class="legend-line-dashed" style="border-color:#f57c00"></div> MTB trail (moderate 2–3)</div>
+        <div class="legend-row"><div class="legend-line-dashed" style="border-color:#c62828"></div> MTB trail (hard 4–6)</div>
+        <div class="legend-row"><div class="legend-line-dashed" style="border-color:#e53935"></div> Road: cyclists forbidden</div>
+        <div class="legend-title" style="margin-top:6px">Route relations</div>
+        <div class="legend-row"><div class="legend-line" style="background:#1a47a1"></div> International / national</div>
+        <div class="legend-row"><div class="legend-line" style="background:#1a7fc1"></div> Regional</div>
+        <div class="legend-row"><div class="legend-line" style="background:#38b2c0"></div> Local</div>
+        <div class="legend-row"><div class="legend-line" style="background:#8e24aa"></div> MTB route</div>
+        <div class="legend-title" style="margin-top:6px">POIs</div>
+        <div class="legend-row"><div class="legend-dot" style="background:#e67c2a"></div> Bike repair</div>
+        <div class="legend-row"><div class="legend-dot" style="background:#8e44ad"></div> Bike rental</div>
+        <div class="legend-row"><div class="legend-dot" style="background:#2980b9"></div> Bike parking</div>
+        <div class="legend-row"><div class="legend-dot" style="background:#27a8a8"></div> Drinking water</div>
+    </div>
+    <div id="map"></div>
+    <script>
+        let protocol = new pmtiles.Protocol();
+        maplibregl.addProtocol("pmtiles", protocol.tile);
+
+        function parseHash() {
+            const hash = window.location.hash.slice(1);
+            if (!hash) return null;
+            const parts = hash.split('/');
+            if (parts.length === 3) {
+                const zoom = parseFloat(parts[0]);
+                const lat  = parseFloat(parts[1]);
+                const lng  = parseFloat(parts[2]);
+                if (!isNaN(zoom) && !isNaN(lat) && !isNaN(lng)) {
+                    return { zoom, center: [lng, lat] };
+                }
+            }
+            return null;
+        }
+
+        const hashPosition = parseHash();
+        const initialPosition = hashPosition || { center: [19.5, 47.2], zoom: 8 };
+
+        const map = new maplibregl.Map({
+            container: 'map',
+            center: initialPosition.center,
+            zoom: initialPosition.zoom,
+            style: 'http://localhost:8080/style-bike.json',
+            hash: true
+        });
+
+        map.on('error', (e) => {
+            if (e.error && e.error.message && e.error.message.includes('Unimplemented type')) return;
+            console.error('Map error:', e);
+        });
+
+        map.addControl(new maplibregl.NavigationControl());
+        map.addControl(new maplibregl.ScaleControl());
+
+        // Click handler for cycling routes and paths
+        const cyclingLayers = [
+            'cycling-routes', 'cycling-routes-mtb',
+            'cycling-paths', 'mtb-trails-easy', 'mtb-trails-moderate', 'mtb-trails-hard', 'mtb-paths'
+        ];
+
+        map.on('click', (e) => {
+            const features = map.queryRenderedFeatures(e.point, { layers: cyclingLayers });
+            if (!features.length) return;
+
+            const feature = features[0];
+            const props = feature.properties;
+            const layerId = feature.layer.id;
+
+            let html = '<div style="min-width: 200px;">';
+
+            if (layerId === 'cycling-routes' || layerId === 'cycling-routes-mtb') {
+                // Route relation
+                const networkLabels = { icn: 'International', ncn: 'National', rcn: 'Regional', lcn: 'Local' };
+                const networkLabel = networkLabels[props.network] || props.network || '';
+                const routeType = props.route === 'mtb' ? 'MTB' : 'Cycling';
+
+                html += `<strong style="font-size:14px">${props.name || props.ref || 'Unnamed Route'}</strong><br>`;
+                html += `<div style="font-size:12px;color:#555;margin-top:5px;">`;
+                if (props.ref)     html += `<div><strong>Ref:</strong> ${props.ref}</div>`;
+                if (networkLabel)  html += `<div><strong>Network:</strong> ${networkLabel}</div>`;
+                if (props.colour)  html += `<div><strong>Colour:</strong> ${props.colour}</div>`;
+                html += `<div style="margin-top:4px;font-style:italic;color:#777">${routeType} Route</div>`;
+                html += `</div>`;
+            } else {
+                // Physical cycling way
+                const typeLabels = {
+                    cycleway:  'Dedicated cycleway',
+                    mtb_trail: 'MTB trail',
+                    mtb_path:  'Bike-accessible path'
+                };
+                const typeLabel = typeLabels[props.type] || props.type || 'Cycling way';
+
+                html += `<strong style="font-size:14px">${props.name || typeLabel}</strong><br>`;
+                html += `<div style="font-size:12px;color:#555;margin-top:5px;">`;
+                if (props.type)      html += `<div><strong>Type:</strong> ${typeLabel}</div>`;
+                if (props.mtb_scale !== undefined && props.mtb_scale !== null) {
+                    const diffLabels = ['0 – Easy', '1 – Easy', '2 – Moderate', '3 – Moderate', '4 – Hard', '5 – Very Hard', '6 – Extreme'];
+                    html += `<div><strong>MTB scale:</strong> ${diffLabels[props.mtb_scale] || props.mtb_scale}</div>`;
+                }
+                if (props.surface)   html += `<div><strong>Surface:</strong> ${props.surface}</div>`;
+                if (props.highway)   html += `<div><strong>OSM highway:</strong> ${props.highway}</div>`;
+                html += `</div>`;
+            }
+
+            html += '</div>';
+
+            new maplibregl.Popup()
+                .setLngLat(e.lngLat)
+                .setHTML(html)
+                .addTo(map);
+        });
+
+        // Click handler for POIs
+        map.on('click', 'pois', (e) => {
+            const features = map.queryRenderedFeatures(e.point, { layers: ['pois'] });
+            if (!features.length) return;
+
+            const props = features[0].properties;
+            const iconMap = {
+                bicycle_repair_station: '🔧',
+                bicycle_rental:         '🚲',
+                bicycle_parking:        '🅿️',
+                drinking_water:         '💧'
+            };
+            const labelMap = {
+                bicycle_repair_station: 'Bike Repair',
+                bicycle_rental:         'Bike Rental',
+                bicycle_parking:        'Bike Parking',
+                drinking_water:         'Drinking Water'
+            };
+
+            const icon  = iconMap[props.type] || '📍';
+            const label = labelMap[props.type] || props.type;
+
+            let html = `<div style="min-width:160px">`;
+            html += `<div style="display:flex;align-items:center;margin-bottom:6px">`;
+            html += `<span style="font-size:22px;margin-right:8px">${icon}</span>`;
+            html += `<strong style="font-size:14px">${props.name || label}</strong>`;
+            html += `</div>`;
+            html += `<div style="font-size:12px;color:#555"><div>${label}</div></div>`;
+            html += `</div>`;
+
+            new maplibregl.Popup()
+                .setLngLat(e.lngLat)
+                .setHTML(html)
+                .addTo(map);
+        });
+
+        // Cursor on hover
+        [...cyclingLayers, 'pois'].forEach(layer => {
+            map.on('mouseenter', layer, () => { map.getCanvas().style.cursor = 'pointer'; });
+            map.on('mouseleave', layer, () => { map.getCanvas().style.cursor = ''; });
+        });
+
+        map.on('load', () => { console.log('Bike map loaded!'); });
+
+        // Terrain / hillshade controls
+        let terrainEnabled  = false;
+        let hillshadeEnabled = true;
+        let terrainExaggeration = 1.2;
+
+        const exaggerationSlider = document.getElementById('exaggeration-slider');
+        const exaggerationValue  = document.getElementById('exaggeration-value');
+        const exaggerationRow    = document.getElementById('exaggeration-row');
+
+        document.getElementById('btn-terrain').addEventListener('click', function() {
+            terrainEnabled = !terrainEnabled;
+            this.classList.toggle('active', terrainEnabled);
+            exaggerationRow.classList.toggle('visible', terrainEnabled);
+            if (terrainEnabled) {
+                map.setTerrain({ source: 'terrain-rgb', exaggeration: terrainExaggeration });
+                if (map.getPitch() < 20) map.easeTo({ pitch: 50, duration: 800 });
+            } else {
+                map.setTerrain(null);
+                map.easeTo({ pitch: 0, duration: 600 });
+            }
+        });
+
+        exaggerationSlider.addEventListener('input', function() {
+            terrainExaggeration = parseFloat(this.value);
+            exaggerationValue.textContent = terrainExaggeration.toFixed(1);
+            if (terrainEnabled) map.setTerrain({ source: 'terrain-rgb', exaggeration: terrainExaggeration });
+        });
+
+        document.getElementById('btn-hillshade').addEventListener('click', function() {
+            hillshadeEnabled = !hillshadeEnabled;
+            this.classList.toggle('active', hillshadeEnabled);
+            map.setLayoutProperty('hillshade', 'visibility', hillshadeEnabled ? 'visible' : 'none');
+        });
+    </script>
+</body>
+</html>

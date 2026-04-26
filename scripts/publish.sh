@@ -23,7 +23,7 @@ fi
 DEST_URL="${DEST_URL%/}"
 
 echo "======================================"
-echo "Publishing Hungarian Hiking Map"
+echo "Publishing Hungarian Maps"
 echo "======================================"
 echo ""
 echo "Target:      $TARGET_DIR"
@@ -55,5 +55,7 @@ find "$TARGET_DIR" -type f | sort | while read -r f; do
     echo "  $size  ${f#$TARGET_DIR/}"
 done
 echo ""
-echo "Map will be available at: $DEST_URL/index.html"
+echo "Maps will be available at:"
+echo "  Hiking: $DEST_URL/index.html"
+echo "  Bike:   $DEST_URL/bike.html"
 echo ""

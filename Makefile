@@ -1,5 +1,6 @@
 .PHONY: help download fonts setup generate contours terrain up down restart logs clean all
 .PHONY: garmin-image garmin garmin-clean all-maps
+.PHONY: generate-bike bike
 .PHONY: dev-up dev-down dev-logs style-to-maputnik style-from-maputnik
 
 help:
@@ -21,6 +22,10 @@ help:
 	@echo ""
 	@echo "Topographic maps:"
 	@echo "  make topo        - Full topographic setup with contours"
+	@echo ""
+	@echo "Bike maps:"
+	@echo "  make generate-bike   - Generate bike PMTiles (cycling routes + MTB)"
+	@echo "  make bike            - Alias for generate-bike"
 	@echo ""
 	@echo "Garmin device maps:"
 	@echo "  make garmin-image    - Build Docker image for Garmin tools"
@@ -113,6 +118,13 @@ clean:
 	@rm -f tiles/*.mbtiles
 	@rm -rf tmp/tilemaker_store
 	@echo "Done!"
+
+# Bike map generation
+generate-bike:
+	@echo "Generating bike PMTiles..."
+	@./scripts/generate-bike.sh
+
+bike: generate-bike
 
 # Garmin map generation
 garmin-image:

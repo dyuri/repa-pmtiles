@@ -22,12 +22,18 @@ Self-hosted vector tile map for Hungarian hiking trails. Docker/Podman-based pip
 | `Makefile` | All build targets |
 | `scripts/dem_to_terrain_rgb.py` | DEM → Mapbox terrain-RGB GeoTIFF (reproject, fill voids, encode) |
 | `scripts/generate-terrain.sh` | Full terrain-RGB PMTiles pipeline |
+| `scripts/generate-bike.sh` | Bike map PMTiles pipeline |
 | `scripts/test-terrain-budakeszi.sh` | Quick test pipeline for Budakeszi area only |
 | `scripts/publish.sh` | Copy assets to target dir, substitute URLs |
+| `config/config-bike.json` | Tilemaker layer definitions for bike map |
+| `config/process-bike.lua` | Tilemaker Lua: OSM → cycling/MTB/route extraction |
+| `www/bike.html` | Bike map viewer (MapLibre, separate from hiking viewer) |
+| `www/style-bike.json` | MapLibre style for bike map |
 
 ## Tile Sources (style.json)
 
 - `hungary-hiking` — vector PMTiles (503 MB): trails, POIs, roads, landuse, water, buildings, place_labels, boundaries
+- `hungary-bike` — vector PMTiles: cycling infrastructure, route relations, bike POIs (separate pipeline)
 - `contours` — vector PMTiles (71 MB): elevation contours at 20m intervals
 - `terrain-rgb` — raster-dem PMTiles: Mapbox-encoded elevation for hillshade + 3D terrain
 
@@ -35,6 +41,7 @@ Self-hosted vector tile map for Hungarian hiking trails. Docker/Podman-based pip
 
 ```
 tiles/hungary-hiking.pmtiles       503 MB  main OSM data
+tiles/hungary-bike.pmtiles         ~TBD    bike map (cycling routes, MTB, infrastructure)
 tiles/hungary-contours.pmtiles      71 MB  elevation contours
 tiles/hungary-terrain-rgb.pmtiles   ~15 MB  terrain-RGB (Mapbox encoding, zoom 5-12)
 data/dem/hungary-dem.tif            ~80 MB  Copernicus DEM GLO-30 (30m, Hungary bounds)
@@ -62,6 +69,8 @@ make fonts         # Download Noto Sans PBF glyphs → www/fonts/
 make generate      # OSM → PMTiles (10-30 min via Docker)
 make contours      # DEM download + contour PMTiles (20m intervals)
 make terrain       # DEM → terrain-RGB PMTiles (hillshade + 3D terrain)
+make generate-bike # OSM → hungary-bike.pmtiles (cycling routes, MTB, infrastructure)
+make bike          # alias for generate-bike
 make up            # Start nginx (podman compose up -d)
 make topo          # download + fonts + generate + contours
 make all           # download + fonts + generate + up

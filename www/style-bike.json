@@ -1,0 +1,551 @@
+{
+  "version": 8,
+  "name": "Hungarian Bike Map - Dark",
+  "metadata": {"maputnik:renderer": "mbgljs"},
+  "sources": {
+    "hungary-bike": {
+      "type": "vector",
+      "url": "pmtiles://http://localhost:8080/tiles/hungary-bike.pmtiles",
+      "attribution": "© OpenStreetMap contributors"
+    },
+    "contours": {
+      "type": "vector",
+      "url": "pmtiles://http://localhost:8080/tiles/hungary-contours.pmtiles",
+      "attribution": "SRTM"
+    },
+    "terrain-rgb": {
+      "type": "raster-dem",
+      "url": "pmtiles://http://localhost:8080/tiles/hungary-terrain-rgb.pmtiles",
+      "encoding": "mapbox",
+      "tileSize": 256,
+      "attribution": "SRTM via CGIAR"
+    }
+  },
+  "glyphs": "http://localhost:8080/fonts/{fontstack}/{range}.pbf",
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "minzoom": 0,
+      "layout": {"visibility": "visible"},
+      "paint": {
+        "background-color": [
+          "interpolate", ["exponential", 1], ["zoom"],
+          5, "hsl(215, 20%, 18%)",
+          14, "hsl(215, 10%, 20%)"
+        ]
+      }
+    },
+    {
+      "id": "hillshade",
+      "type": "hillshade",
+      "source": "terrain-rgb",
+      "layout": {"visibility": "visible"},
+      "paint": {
+        "hillshade-illumination-direction": 335,
+        "hillshade-illumination-anchor": "map",
+        "hillshade-exaggeration": 0.8,
+        "hillshade-shadow-color": "hsla(0, 0%, 0%, 0.8)",
+        "hillshade-highlight-color": "hsla(0, 0%, 100%, 0.4)",
+        "hillshade-accent-color": "hsla(0, 0%, 0%, 0.6)"
+      }
+    },
+    {
+      "id": "forest",
+      "type": "fill",
+      "source": "hungary-bike",
+      "source-layer": "landuse",
+      "minzoom": 9,
+      "filter": ["==", "type", "forest"],
+      "layout": {"visibility": "visible"},
+      "paint": {"fill-color": "hsl(91, 38%, 14%)", "fill-opacity": 0.5}
+    },
+    {
+      "id": "grass",
+      "type": "fill",
+      "source": "hungary-bike",
+      "source-layer": "landuse",
+      "minzoom": 11,
+      "filter": ["in", "type", "grass", "meadow", "park"],
+      "layout": {"visibility": "visible"},
+      "paint": {"fill-color": "hsla(90, 35%, 9%, 0.3)"}
+    },
+    {
+      "id": "farmland",
+      "type": "fill",
+      "source": "hungary-bike",
+      "source-layer": "landuse",
+      "minzoom": 11,
+      "filter": ["in", "type", "farmland", "orchard", "vineyard"],
+      "layout": {"visibility": "visible"},
+      "paint": {"fill-color": "hsla(58, 55%, 13%, 0.4)"}
+    },
+    {
+      "id": "water",
+      "type": "fill",
+      "source": "hungary-bike",
+      "source-layer": "water",
+      "layout": {"visibility": "visible"},
+      "paint": {
+        "fill-color": [
+          "interpolate", ["linear"], ["zoom"],
+          6, "hsl(210, 61%, 20%)",
+          14, "hsl(210, 61%, 18%)"
+        ]
+      }
+    },
+    {
+      "id": "waterway",
+      "type": "line",
+      "source": "hungary-bike",
+      "source-layer": "waterway",
+      "minzoom": 8,
+      "layout": {"line-cap": "round", "line-join": "round"},
+      "paint": {
+        "line-color": "hsl(210, 61%, 22%)",
+        "line-width": ["interpolate", ["linear"], ["zoom"], 8, 0.5, 12, 1.5, 14, 2.5]
+      }
+    },
+    {
+      "id": "boundaries",
+      "type": "line",
+      "source": "hungary-bike",
+      "source-layer": "boundaries",
+      "minzoom": 3,
+      "layout": {"line-cap": "round", "line-join": "round"},
+      "paint": {
+        "line-color": "hsl(0, 0%, 32%)",
+        "line-dasharray": [3, 2],
+        "line-width": ["interpolate", ["linear"], ["zoom"], 3, 0.5, 10, 1.5],
+        "line-opacity": 0.6
+      }
+    },
+    {
+      "id": "contour",
+      "type": "line",
+      "source": "contours",
+      "source-layer": "contour",
+      "minzoom": 11,
+      "filter": [
+        "all",
+        ["!=", ["get", "elevation"], 0],
+        ["!=", ["%", ["get", "elevation"], 100], 0]
+      ],
+      "layout": {"line-cap": "square", "visibility": "visible"},
+      "paint": {
+        "line-color": "hsl(36, 24%, 43%)",
+        "line-width": 0.5,
+        "line-opacity": ["interpolate", ["linear"], ["zoom"], 11, 0.15, 13, 0.4, 15, 0.6]
+      }
+    },
+    {
+      "id": "contour-index",
+      "type": "line",
+      "source": "contours",
+      "source-layer": "contour",
+      "minzoom": 10,
+      "filter": [
+        "all",
+        ["!=", ["get", "elevation"], 0],
+        ["==", ["%", ["get", "elevation"], 100], 0]
+      ],
+      "layout": {"visibility": "visible"},
+      "paint": {
+        "line-color": "hsl(36, 24%, 35%)",
+        "line-width": ["interpolate", ["linear"], ["zoom"], 10, 0.8, 13, 1.2, 15, 1.8],
+        "line-opacity": ["interpolate", ["linear"], ["zoom"], 10, 0.3, 13, 0.6, 15, 0.8]
+      }
+    },
+    {
+      "id": "buildings",
+      "type": "fill",
+      "source": "hungary-bike",
+      "source-layer": "buildings",
+      "minzoom": 13,
+      "layout": {"visibility": "visible"},
+      "paint": {
+        "fill-antialias": true,
+        "fill-color": ["interpolate", ["linear"], ["zoom"], 13, "hsl(58, 0%, 12%)", 18, "hsl(58, 0%, 10%)"],
+        "fill-outline-color": "hsl(58, 0%, 11%)"
+      }
+    },
+    {
+      "id": "roads-casing",
+      "type": "line",
+      "source": "hungary-bike",
+      "source-layer": "roads",
+      "minzoom": 5,
+      "layout": {"line-cap": "round", "line-join": "round", "visibility": "visible"},
+      "paint": {
+        "line-color": "hsl(0, 0%, 18%)",
+        "line-width": [
+          "interpolate", ["linear"], ["zoom"],
+          5, ["match", ["get", "type"], "motorway", 1.5, 0],
+          9, ["match", ["get", "type"], ["motorway", "trunk"], 3, ["primary", "secondary"], 2, 0.5],
+          12, ["match", ["get", "type"], "motorway", 8, "trunk", 7, "primary", 6, "secondary", 5, "tertiary", 4, ["residential", "unclassified", "living_street"], 3, 2],
+          14, ["match", ["get", "type"], "motorway", 10, "trunk", 9, "primary", 8, "secondary", 7, "tertiary", 6, ["residential", "unclassified", "living_street"], 5, 3]
+        ]
+      }
+    },
+    {
+      "id": "roads",
+      "type": "line",
+      "source": "hungary-bike",
+      "source-layer": "roads",
+      "minzoom": 5,
+      "layout": {"line-cap": "round", "line-join": "round", "visibility": "visible"},
+      "paint": {
+        "line-color": [
+          "match", ["get", "type"],
+          "motorway", "hsl(0, 0%, 12%)",
+          "trunk", "hsl(0, 0%, 12%)",
+          "primary", "hsl(0, 0%, 14%)",
+          "secondary", "hsl(0, 0%, 16%)",
+          "tertiary", "hsl(0, 0%, 16%)",
+          ["residential", "unclassified", "living_street"], "hsl(0, 0%, 36%)",
+          ["service", "road", "minor"], "hsl(0, 0%, 30%)",
+          "hsl(0, 0%, 33%)"
+        ],
+        "line-width": [
+          "interpolate", ["linear"], ["zoom"],
+          5, ["match", ["get", "type"], "motorway", 0.5, 0],
+          9, ["match", ["get", "type"], ["motorway", "trunk"], 1.5, ["primary", "secondary"], 0.8, 0.3],
+          12, ["match", ["get", "type"], "motorway", 4, "trunk", 3.5, "primary", 2.5, "secondary", 2, "tertiary", 1.5, ["residential", "unclassified", "living_street"], 1, 0.5],
+          14, ["match", ["get", "type"], "motorway", 6, "trunk", 5, "primary", 4, "secondary", 3.5, "tertiary", 3, ["residential", "unclassified", "living_street"], 2, 1]
+        ]
+      }
+    },
+    {
+      "id": "roads-forbidden",
+      "type": "line",
+      "source": "hungary-bike",
+      "source-layer": "roads",
+      "minzoom": 11,
+      "filter": ["==", "bike_forbidden", "yes"],
+      "layout": {"line-cap": "butt", "line-join": "round", "visibility": "visible"},
+      "paint": {
+        "line-color": "hsl(0, 85%, 55%)",
+        "line-width": ["interpolate", ["linear"], ["zoom"], 11, 1.5, 14, 3],
+        "line-dasharray": [2, 3],
+        "line-opacity": 0.75
+      }
+    },
+    {
+      "id": "mtb-trails-easy",
+      "type": "line",
+      "source": "hungary-bike",
+      "source-layer": "cycling",
+      "minzoom": 11,
+      "filter": ["all", ["==", "type", "mtb_trail"], ["in", "mtb_scale", "0", "1"]],
+      "layout": {"line-cap": "round", "line-join": "round", "visibility": "visible"},
+      "paint": {
+        "line-color": "hsl(120, 65%, 42%)",
+        "line-width": ["interpolate", ["linear"], ["zoom"], 11, 1.5, 14, 2.5]
+      }
+    },
+    {
+      "id": "mtb-trails-moderate",
+      "type": "line",
+      "source": "hungary-bike",
+      "source-layer": "cycling",
+      "minzoom": 11,
+      "filter": ["all", ["==", "type", "mtb_trail"], ["in", "mtb_scale", "2", "3"]],
+      "layout": {"line-cap": "round", "line-join": "round", "visibility": "visible"},
+      "paint": {
+        "line-color": "hsl(35, 90%, 52%)",
+        "line-width": ["interpolate", ["linear"], ["zoom"], 11, 1.5, 14, 2.5],
+        "line-dasharray": [4, 2]
+      }
+    },
+    {
+      "id": "mtb-trails-hard",
+      "type": "line",
+      "source": "hungary-bike",
+      "source-layer": "cycling",
+      "minzoom": 11,
+      "filter": ["all", ["==", "type", "mtb_trail"], ["in", "mtb_scale", "4", "5", "6"]],
+      "layout": {"line-cap": "round", "line-join": "round", "visibility": "visible"},
+      "paint": {
+        "line-color": "hsl(0, 80%, 50%)",
+        "line-width": ["interpolate", ["linear"], ["zoom"], 11, 1.5, 14, 2.5],
+        "line-dasharray": [2, 2]
+      }
+    },
+    {
+      "id": "mtb-paths",
+      "type": "line",
+      "source": "hungary-bike",
+      "source-layer": "cycling",
+      "minzoom": 11,
+      "filter": ["==", "type", "mtb_path"],
+      "layout": {"line-cap": "round", "line-join": "round", "visibility": "visible"},
+      "paint": {
+        "line-color": "hsl(100, 55%, 38%)",
+        "line-width": ["interpolate", ["linear"], ["zoom"], 11, 1, 14, 2]
+      }
+    },
+    {
+      "id": "cycling-paths",
+      "type": "line",
+      "source": "hungary-bike",
+      "source-layer": "cycling",
+      "minzoom": 10,
+      "filter": ["==", "type", "cycleway"],
+      "layout": {"line-cap": "round", "line-join": "round", "visibility": "visible"},
+      "paint": {
+        "line-color": "hsl(210, 90%, 58%)",
+        "line-width": ["interpolate", ["linear"], ["zoom"], 10, 1.5, 14, 3.5]
+      }
+    },
+    {
+      "id": "cycling-routes-mtb-casing",
+      "type": "line",
+      "source": "hungary-bike",
+      "source-layer": "cycling_routes",
+      "minzoom": 8,
+      "filter": ["==", "route", "mtb"],
+      "layout": {"line-cap": "round", "line-join": "round", "visibility": "visible"},
+      "paint": {
+        "line-color": "hsla(0, 0%, 0%, 0.4)",
+        "line-width": ["interpolate", ["linear"], ["zoom"], 8, 3, 14, 5],
+        "line-offset": ["interpolate", ["linear"], ["zoom"], 8, -2.5, 14, -5]
+      }
+    },
+    {
+      "id": "cycling-routes-mtb",
+      "type": "line",
+      "source": "hungary-bike",
+      "source-layer": "cycling_routes",
+      "minzoom": 8,
+      "filter": ["==", "route", "mtb"],
+      "layout": {"line-cap": "round", "line-join": "round", "visibility": "visible"},
+      "paint": {
+        "line-color": "hsl(280, 70%, 58%)",
+        "line-width": ["interpolate", ["linear"], ["zoom"], 8, 1.5, 14, 3],
+        "line-offset": ["interpolate", ["linear"], ["zoom"], 8, -2.5, 14, -5]
+      }
+    },
+    {
+      "id": "cycling-routes-casing",
+      "type": "line",
+      "source": "hungary-bike",
+      "source-layer": "cycling_routes",
+      "minzoom": 6,
+      "filter": ["==", "route", "bicycle"],
+      "layout": {"line-cap": "round", "line-join": "round", "visibility": "visible"},
+      "paint": {
+        "line-color": "hsla(0, 0%, 0%, 0.4)",
+        "line-width": [
+          "interpolate", ["linear"], ["zoom"],
+          6, ["match", ["get", "network"], ["icn", "ncn"], 3, "rcn", 2.5, 2],
+          14, ["match", ["get", "network"], ["icn", "ncn"], 6, "rcn", 5, 4]
+        ],
+        "line-offset": [
+          "interpolate", ["linear"], ["zoom"],
+          6, ["match", ["get", "network"], "icn", 3, "ncn", 2.5, "rcn", 1.5, 1],
+          14, ["match", ["get", "network"], "icn", 7, "ncn", 6, "rcn", 4, 2]
+        ]
+      }
+    },
+    {
+      "id": "cycling-routes",
+      "type": "line",
+      "source": "hungary-bike",
+      "source-layer": "cycling_routes",
+      "minzoom": 6,
+      "filter": ["==", "route", "bicycle"],
+      "layout": {"line-cap": "round", "line-join": "round", "visibility": "visible"},
+      "paint": {
+        "line-color": [
+          "match", ["get", "network"],
+          "icn", "hsl(220, 90%, 60%)",
+          "ncn", "hsl(210, 85%, 58%)",
+          "rcn", "hsl(195, 75%, 52%)",
+          "lcn", "hsl(180, 65%, 48%)",
+          "hsl(200, 60%, 55%)"
+        ],
+        "line-width": [
+          "interpolate", ["linear"], ["zoom"],
+          6, ["match", ["get", "network"], ["icn", "ncn"], 1.5, "rcn", 1, 0.8],
+          14, ["match", ["get", "network"], ["icn", "ncn"], 3.5, "rcn", 2.5, 2]
+        ],
+        "line-offset": [
+          "interpolate", ["linear"], ["zoom"],
+          6, ["match", ["get", "network"], "icn", 3, "ncn", 2.5, "rcn", 1.5, 1],
+          14, ["match", ["get", "network"], "icn", 7, "ncn", 6, "rcn", 4, 2]
+        ]
+      }
+    },
+    {
+      "id": "pois",
+      "type": "circle",
+      "source": "hungary-bike",
+      "source-layer": "pois",
+      "minzoom": 12,
+      "paint": {
+        "circle-radius": ["interpolate", ["linear"], ["zoom"], 12, 4, 16, 7],
+        "circle-color": [
+          "match", ["get", "type"],
+          "bicycle_repair_station", "hsl(35, 80%, 55%)",
+          "bicycle_rental",         "hsl(270, 65%, 58%)",
+          "bicycle_parking",        "hsl(210, 70%, 55%)",
+          "drinking_water",         "hsl(195, 75%, 52%)",
+          "hsl(0, 0%, 55%)"
+        ],
+        "circle-stroke-width": 2,
+        "circle-stroke-color": "hsl(0, 0%, 12%)",
+        "circle-opacity": 0.9
+      }
+    },
+    {
+      "id": "contour-labels",
+      "type": "symbol",
+      "source": "contours",
+      "source-layer": "contour",
+      "minzoom": 13,
+      "filter": ["==", ["%", ["get", "elevation"], 100], 0],
+      "layout": {
+        "symbol-avoid-edges": true,
+        "symbol-placement": "line",
+        "text-allow-overlap": false,
+        "text-field": "{elevation}m",
+        "text-font": ["Noto Sans Regular"],
+        "text-size": ["interpolate", ["linear"], ["zoom"], 13, 8, 16, 10],
+        "text-rotation-alignment": "map"
+      },
+      "paint": {
+        "text-color": "hsl(38, 50%, 60%)",
+        "text-halo-color": "hsl(215, 10%, 18%)",
+        "text-halo-width": 1.5,
+        "text-opacity": ["interpolate", ["linear"], ["zoom"], 13, 0.6, 15, 0.9]
+      }
+    },
+    {
+      "id": "road-labels",
+      "type": "symbol",
+      "source": "hungary-bike",
+      "source-layer": "roads",
+      "minzoom": 12,
+      "filter": ["has", "name"],
+      "layout": {
+        "text-field": ["coalesce", ["get", "name"], ["get", "ref"]],
+        "text-font": ["Noto Sans Regular"],
+        "text-size": [
+          "interpolate", ["linear"], ["zoom"],
+          12, ["match", ["get", "type"], ["motorway", "trunk"], 10, ["primary", "secondary"], 9, 8],
+          16, ["match", ["get", "type"], ["motorway", "trunk"], 13, ["primary", "secondary"], 12, 11]
+        ],
+        "symbol-placement": "line",
+        "text-rotation-alignment": "map",
+        "text-pitch-alignment": "viewport",
+        "text-max-angle": 30
+      },
+      "paint": {
+        "text-color": "hsl(0, 0%, 65%)",
+        "text-halo-color": "hsl(0, 0%, 10%)",
+        "text-halo-width": 2,
+        "text-opacity": ["interpolate", ["linear"], ["zoom"], 12, 0.7, 14, 1]
+      }
+    },
+    {
+      "id": "waterway-labels",
+      "type": "symbol",
+      "source": "hungary-bike",
+      "source-layer": "waterway",
+      "minzoom": 13,
+      "filter": ["has", "name"],
+      "layout": {
+        "text-field": ["get", "name"],
+        "text-font": ["Noto Sans Regular"],
+        "text-size": 10,
+        "symbol-placement": "line",
+        "text-rotation-alignment": "map"
+      },
+      "paint": {
+        "text-color": "hsl(210, 60%, 55%)",
+        "text-halo-color": "hsl(0, 0%, 10%)",
+        "text-halo-width": 1.5
+      }
+    },
+    {
+      "id": "poi-labels",
+      "type": "symbol",
+      "source": "hungary-bike",
+      "source-layer": "pois",
+      "minzoom": 13,
+      "filter": ["has", "name"],
+      "layout": {
+        "text-field": ["get", "name"],
+        "text-font": ["Noto Sans Regular"],
+        "text-size": ["interpolate", ["linear"], ["zoom"], 13, 9, 16, 11],
+        "text-anchor": "top",
+        "text-offset": [0, 1]
+      },
+      "paint": {
+        "text-color": "hsl(0, 0%, 85%)",
+        "text-halo-color": "hsl(0, 0%, 10%)",
+        "text-halo-width": 1.5
+      }
+    },
+    {
+      "id": "cycling-route-labels",
+      "type": "symbol",
+      "source": "hungary-bike",
+      "source-layer": "cycling_routes",
+      "minzoom": 10,
+      "filter": ["has", "ref"],
+      "layout": {
+        "text-field": ["get", "ref"],
+        "text-font": ["Noto Sans Bold"],
+        "text-size": ["interpolate", ["linear"], ["zoom"], 10, 9, 14, 11],
+        "symbol-placement": "line",
+        "symbol-spacing": 300,
+        "text-rotation-alignment": "map",
+        "text-keep-upright": true,
+        "text-allow-overlap": false
+      },
+      "paint": {
+        "text-color": [
+          "match", ["get", "route"],
+          "mtb", "hsl(280, 80%, 75%)",
+          ["match", ["get", "network"],
+            "icn", "hsl(220, 90%, 80%)",
+            "ncn", "hsl(210, 85%, 78%)",
+            "hsl(195, 75%, 72%)"
+          ]
+        ],
+        "text-halo-color": "hsl(0, 0%, 8%)",
+        "text-halo-width": 2,
+        "text-opacity": 0.9
+      }
+    },
+    {
+      "id": "place-labels",
+      "type": "symbol",
+      "source": "hungary-bike",
+      "source-layer": "place_labels",
+      "minzoom": 6,
+      "layout": {
+        "text-field": ["get", "name"],
+        "text-font": [
+          "case",
+          ["==", ["get", "type"], "city"], ["literal", ["Noto Sans Bold"]],
+          ["literal", ["Noto Sans Regular"]]
+        ],
+        "text-size": [
+          "interpolate", ["linear"], ["zoom"],
+          6, ["match", ["get", "type"], "city", 12, 10],
+          12, ["match", ["get", "type"], "city", 18, "town", 15, "village", 12, 10],
+          16, ["match", ["get", "type"], "city", 22, "town", 18, "village", 14, 12]
+        ]
+      },
+      "paint": {
+        "text-color": "hsl(0, 0%, 90%)",
+        "text-halo-color": "hsl(0, 0%, 10%)",
+        "text-halo-width": 2.5,
+        "text-opacity": ["interpolate", ["linear"], ["zoom"], 6, 0.8, 10, 1]
+      }
+    }
+  ],
+  "id": "hungarian-bike-dark"
+}
